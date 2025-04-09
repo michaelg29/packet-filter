@@ -17,6 +17,134 @@
          type = "int";
       }
    }
+   element frame_generator_0
+   {
+      datum _sortIndex
+      {
+         value = "3";
+         type = "int";
+      }
+   }
+   element frame_generator_0.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "312";
+         type = "String";
+      }
+   }
+   element frame_generator_1
+   {
+      datum _sortIndex
+      {
+         value = "4";
+         type = "int";
+      }
+   }
+   element frame_generator_1.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "304";
+         type = "String";
+      }
+   }
+   element frame_generator_2
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
+      }
+   }
+   element frame_generator_2.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "296";
+         type = "String";
+      }
+   }
+   element frame_generator_3
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
+   element frame_generator_3.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "288";
+         type = "String";
+      }
+   }
+   element frame_receptor_0
+   {
+      datum _sortIndex
+      {
+         value = "7";
+         type = "int";
+      }
+   }
+   element frame_receptor_0.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "280";
+         type = "String";
+      }
+   }
+   element frame_receptor_1
+   {
+      datum _sortIndex
+      {
+         value = "8";
+         type = "int";
+      }
+   }
+   element frame_receptor_1.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "272";
+         type = "String";
+      }
+   }
+   element frame_receptor_2
+   {
+      datum _sortIndex
+      {
+         value = "9";
+         type = "int";
+      }
+   }
+   element frame_receptor_2.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "264";
+         type = "String";
+      }
+   }
+   element frame_receptor_3
+   {
+      datum _sortIndex
+      {
+         value = "10";
+         type = "int";
+      }
+   }
+   element frame_receptor_3.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "256";
+         type = "String";
+      }
+   }
    element hps_0
    {
       datum _sortIndex
@@ -25,12 +153,140 @@
          type = "int";
       }
    }
-   element vga_ball_0
+   element packet_filter_0
    {
       datum _sortIndex
       {
          value = "2";
          type = "int";
+      }
+   }
+   element packet_filter_0.avalon_slave_0
+   {
+      datum baseAddress
+      {
+         value = "0";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
       }
    }
 }
@@ -47,7 +303,7 @@
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="soc_system.qpf" />
+ <parameter name="projectName" value="" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -56,15 +312,60 @@
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
  <interface name="hps" internal="hps_0.hps_io" type="conduit" dir="end" />
+ <interface
+   name="hps_0_f2h_irq1"
+   internal="hps_0.f2h_irq1"
+   type="interrupt"
+   dir="start" />
  <interface name="hps_ddr3" internal="hps_0.memory" type="conduit" dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
- <interface name="vga" internal="vga_ball_0.vga" type="conduit" dir="end" />
+ <interface name="vga" internal="packet_filter_0.vga" />
  <module name="clk_0" kind="clock_source" version="21.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
  </module>
+ <module
+   name="frame_generator_0"
+   kind="frame_generator"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_generator_1"
+   kind="frame_generator"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_generator_2"
+   kind="frame_generator"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_generator_3"
+   kind="frame_generator"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_receptor_0"
+   kind="frame_receptor"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_receptor_1"
+   kind="frame_receptor"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_receptor_2"
+   kind="frame_receptor"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="frame_receptor_3"
+   kind="frame_receptor"
+   version="1.0"
+   enabled="1" />
  <module name="hps_0" kind="altera_hps" version="21.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />
   <parameter name="ABS_RAM_MEM_INIT_FILENAME" value="meminit" />
@@ -595,17 +896,173 @@
   <parameter name="usb_mp_clk_div" value="0" />
   <parameter name="use_default_mpu_clk" value="true" />
  </module>
- <module name="vga_ball_0" kind="vga_ball" version="1.0" enabled="1" />
+ <module name="packet_filter_0" kind="packet_filter" version="1.0" enabled="1" />
  <connection
    kind="avalon"
    version="21.1"
    start="hps_0.h2f_lw_axi_master"
-   end="vga_ball_0.avalon_slave_0">
+   end="packet_filter_0.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
- <connection kind="clock" version="21.1" start="clk_0.clk" end="vga_ball_0.clock" />
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_generator_0.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0138" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_generator_1.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0130" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_generator_2.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0128" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_generator_3.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0120" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_receptor_0.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0118" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_receptor_1.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0110" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_receptor_2.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0108" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="frame_receptor_3.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0100" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="frame_generator_0.egress_port"
+   end="packet_filter_0.ingress_port_0" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="frame_generator_1.egress_port"
+   end="packet_filter_0.ingress_port_1" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="frame_generator_2.egress_port"
+   end="packet_filter_0.ingress_port_2" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="frame_generator_3.egress_port"
+   end="packet_filter_0.ingress_port_3" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_filter_0.egress_port_0"
+   end="frame_receptor_0.ingress_port" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_filter_0.egress_port_1"
+   end="frame_receptor_1.ingress_port" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_filter_0.egress_port_2"
+   end="frame_receptor_2.ingress_port" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_filter_0.egress_port_3"
+   end="frame_receptor_3.ingress_port" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="packet_filter_0.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_generator_0.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_generator_1.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_generator_2.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_generator_3.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_receptor_0.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_receptor_1.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_receptor_2.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="frame_receptor_3.clock" />
  <connection
    kind="clock"
    version="21.1"
@@ -622,10 +1079,57 @@
    start="clk_0.clk"
    end="hps_0.h2f_lw_axi_clock" />
  <connection
+   kind="interrupt"
+   version="21.1"
+   start="hps_0.f2h_irq0"
+   end="packet_filter_0.packet_filter_interrupt">
+  <parameter name="irqNumber" value="0" />
+ </connection>
+ <connection
    kind="reset"
    version="21.1"
    start="clk_0.clk_reset"
-   end="vga_ball_0.reset" />
+   end="packet_filter_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_generator_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_generator_1.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_generator_2.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_generator_3.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_receptor_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_receptor_1.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_receptor_2.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="frame_receptor_3.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />

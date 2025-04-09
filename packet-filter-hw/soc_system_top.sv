@@ -268,14 +268,7 @@ module soc_system_top(
      .hps_hps_io_gpio_inst_GPIO54  ( HPS_KEY ),
      .hps_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT ),
 
-     .vga_r (),
-     .vga_g (),
-     .vga_b (),
-     .vga_clk (),
-     .vga_hs (),
-     .vga_vs (),
-     .vga_blank_n (),
-     .vga_sync_n ()
+     .hps_0_f2h_irq1_irq           ( 1'b0 )
   );
 
    // The following quiet the "no driver" warnings for output
