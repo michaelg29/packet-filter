@@ -1,4 +1,4 @@
-// packet_filter.v
+// packet_switch.v
 
 // This file was auto-generated as a prototype implementation of a module
 // created in component editor.  It ties off all outputs to ground and
@@ -9,7 +9,7 @@
 // to your version control system if you want to keep it.
 
 `timescale 1 ps / 1 ps
-module packet_filter (
+module packet_switch (
 		input  wire        clk,                   //                   clock.clk
 		input  wire        reset,                 //                   reset.reset
 		input  wire [7:0]  writedata,             //          avalon_slave_0.writedata
@@ -22,38 +22,38 @@ module packet_filter (
 		input  wire        ingress_port_0_tvalid, //                        .tvalid
 		output wire        ingress_port_0_tready, //                        .tready
 		input  wire        ingress_port_0_tlast,  //                        .tlast
+		input  wire [1:0]  ingress_port_0_tdest,  //                        .tdest
 		input  wire [15:0] ingress_port_1_tdata,  //          ingress_port_1.tdata
 		input  wire        ingress_port_1_tlast,  //                        .tlast
 		input  wire        ingress_port_1_tvalid, //                        .tvalid
 		output wire        ingress_port_1_tready, //                        .tready
+		input  wire [1:0]  ingress_port_1_tdest,  //                        .tdest
 		input  wire [15:0] ingress_port_2_tdata,  //          ingress_port_2.tdata
 		input  wire        ingress_port_2_tlast,  //                        .tlast
 		input  wire        ingress_port_2_tvalid, //                        .tvalid
 		output wire        ingress_port_2_tready, //                        .tready
+		input  wire [1:0]  ingress_port_2_tdest,  //                        .tdest
 		input  wire [15:0] ingress_port_3_tdata,  //          ingress_port_3.tdata
 		output wire        ingress_port_3_tready, //                        .tready
 		input  wire        ingress_port_3_tlast,  //                        .tlast
 		input  wire        ingress_port_3_tvalid, //                        .tvalid
+		input  wire [1:0]  ingress_port_3_tdest,  //                        .tdest
 		output wire [15:0] egress_port_0_tdata,   //           egress_port_0.tdata
 		output wire        egress_port_0_tlast,   //                        .tlast
 		input  wire        egress_port_0_tready,  //                        .tready
 		output wire        egress_port_0_tvalid,  //                        .tvalid
-		output wire [1:0]  egress_port_0_tdest,   //                        .tdest
 		output wire [15:0] egress_port_1_tdata,   //           egress_port_1.tdata
 		output wire        egress_port_1_tlast,   //                        .tlast
 		input  wire        egress_port_1_tready,  //                        .tready
 		output wire        egress_port_1_tvalid,  //                        .tvalid
-		output wire [1:0]  egress_port_1_tdest,   //                        .tdest
 		output wire [15:0] egress_port_2_tdata,   //           egress_port_2.tdata
 		output wire        egress_port_2_tlast,   //                        .tlast
 		input  wire        egress_port_2_tready,  //                        .tready
 		output wire        egress_port_2_tvalid,  //                        .tvalid
-		output wire [1:0]  egress_port_2_tdest,   //                        .tdest
 		output wire [15:0] egress_port_3_tdata,   //           egress_port_3.tdata
 		output wire        egress_port_3_tlast,   //                        .tlast
 		input  wire        egress_port_3_tready,  //                        .tready
 		output wire        egress_port_3_tvalid,  //                        .tvalid
-		output wire [1:0]  egress_port_3_tdest,   //                        .tdest
 		output wire        irq                    // packet_filter_interrupt.irq
 	);
 
@@ -71,15 +71,11 @@ module packet_filter (
 
 	assign egress_port_0_tvalid = 1'b0;
 
-	assign egress_port_0_tdest = 2'b00;
-
 	assign egress_port_0_tdata = 16'b0000000000000000;
 
 	assign egress_port_0_tlast = 1'b0;
 
 	assign egress_port_1_tvalid = 1'b0;
-
-	assign egress_port_1_tdest = 2'b00;
 
 	assign egress_port_1_tdata = 16'b0000000000000000;
 
@@ -87,15 +83,11 @@ module packet_filter (
 
 	assign egress_port_2_tvalid = 1'b0;
 
-	assign egress_port_2_tdest = 2'b00;
-
 	assign egress_port_2_tdata = 16'b0000000000000000;
 
 	assign egress_port_2_tlast = 1'b0;
 
 	assign egress_port_3_tvalid = 1'b0;
-
-	assign egress_port_3_tdest = 2'b00;
 
 	assign egress_port_3_tdata = 16'b0000000000000000;
 

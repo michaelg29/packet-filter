@@ -21,7 +21,7 @@
    {
       datum _sortIndex
       {
-         value = "3";
+         value = "2";
          type = "int";
       }
    }
@@ -29,7 +29,7 @@
    {
       datum baseAddress
       {
-         value = "312";
+         value = "568";
          type = "String";
       }
    }
@@ -37,7 +37,7 @@
    {
       datum _sortIndex
       {
-         value = "4";
+         value = "3";
          type = "int";
       }
    }
@@ -45,7 +45,7 @@
    {
       datum baseAddress
       {
-         value = "304";
+         value = "560";
          type = "String";
       }
    }
@@ -53,7 +53,7 @@
    {
       datum _sortIndex
       {
-         value = "5";
+         value = "4";
          type = "int";
       }
    }
@@ -61,7 +61,7 @@
    {
       datum baseAddress
       {
-         value = "296";
+         value = "552";
          type = "String";
       }
    }
@@ -69,7 +69,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "5";
          type = "int";
       }
    }
@@ -77,7 +77,7 @@
    {
       datum baseAddress
       {
-         value = "288";
+         value = "544";
          type = "String";
       }
    }
@@ -85,7 +85,7 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "8";
          type = "int";
       }
    }
@@ -93,7 +93,7 @@
    {
       datum baseAddress
       {
-         value = "280";
+         value = "536";
          type = "String";
       }
    }
@@ -101,7 +101,7 @@
    {
       datum _sortIndex
       {
-         value = "8";
+         value = "9";
          type = "int";
       }
    }
@@ -109,7 +109,7 @@
    {
       datum baseAddress
       {
-         value = "272";
+         value = "528";
          type = "String";
       }
    }
@@ -117,7 +117,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "10";
          type = "int";
       }
    }
@@ -125,7 +125,7 @@
    {
       datum baseAddress
       {
-         value = "264";
+         value = "520";
          type = "String";
       }
    }
@@ -133,7 +133,7 @@
    {
       datum _sortIndex
       {
-         value = "10";
+         value = "11";
          type = "int";
       }
    }
@@ -141,7 +141,7 @@
    {
       datum baseAddress
       {
-         value = "256";
+         value = "512";
          type = "String";
       }
    }
@@ -157,7 +157,7 @@
    {
       datum _sortIndex
       {
-         value = "2";
+         value = "6";
          type = "int";
       }
    }
@@ -165,7 +165,47 @@
    {
       datum baseAddress
       {
+         value = "256";
+         type = "String";
+      }
+   }
+   element packet_switch_0
+   {
+      datum _sortIndex
+      {
+         value = "7";
+         type = "int";
+      }
+   }
+   element packet_switch_0.avalon_slave_0
+   {
+      datum baseAddress
+      {
          value = "0";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
          type = "String";
       }
    }
@@ -303,7 +343,7 @@
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="" />
+ <parameter name="projectName" value="soc_system.qpf" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -312,14 +352,8 @@
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
  <interface name="hps" internal="hps_0.hps_io" type="conduit" dir="end" />
- <interface
-   name="hps_0_f2h_irq1"
-   internal="hps_0.f2h_irq1"
-   type="interrupt"
-   dir="start" />
  <interface name="hps_ddr3" internal="hps_0.memory" type="conduit" dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
- <interface name="vga" internal="packet_filter_0.vga" />
  <module name="clk_0" kind="clock_source" version="21.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
@@ -897,22 +931,14 @@
   <parameter name="use_default_mpu_clk" value="true" />
  </module>
  <module name="packet_filter_0" kind="packet_filter" version="1.0" enabled="1" />
- <connection
-   kind="avalon"
-   version="21.1"
-   start="hps_0.h2f_lw_axi_master"
-   end="packet_filter_0.avalon_slave_0">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
+ <module name="packet_switch_0" kind="packet_switch" version="1.0" enabled="1" />
  <connection
    kind="avalon"
    version="21.1"
    start="hps_0.h2f_lw_axi_master"
    end="frame_generator_0.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0138" />
+  <parameter name="baseAddress" value="0x0238" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -921,7 +947,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_generator_1.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0130" />
+  <parameter name="baseAddress" value="0x0230" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -930,7 +956,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_generator_2.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0128" />
+  <parameter name="baseAddress" value="0x0228" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -939,7 +965,25 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_generator_3.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0120" />
+  <parameter name="baseAddress" value="0x0220" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="packet_filter_0.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0100" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="packet_switch_0.avalon_slave_0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -948,7 +992,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_receptor_0.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0118" />
+  <parameter name="baseAddress" value="0x0218" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -957,7 +1001,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_receptor_1.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0110" />
+  <parameter name="baseAddress" value="0x0210" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -966,7 +1010,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_receptor_2.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0108" />
+  <parameter name="baseAddress" value="0x0208" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -975,7 +1019,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="frame_receptor_3.avalon_slave_0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0100" />
+  <parameter name="baseAddress" value="0x0200" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1001,28 +1045,43 @@
  <connection
    kind="axi4stream"
    version="21.1"
-   start="packet_filter_0.egress_port_0"
+   start="packet_switch_0.egress_port_0"
    end="frame_receptor_0.ingress_port" />
  <connection
    kind="axi4stream"
    version="21.1"
-   start="packet_filter_0.egress_port_1"
+   start="packet_filter_0.egress_port_0"
+   end="packet_switch_0.ingress_port_0" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_switch_0.egress_port_1"
    end="frame_receptor_1.ingress_port" />
  <connection
    kind="axi4stream"
    version="21.1"
-   start="packet_filter_0.egress_port_2"
+   start="packet_filter_0.egress_port_1"
+   end="packet_switch_0.ingress_port_1" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_switch_0.egress_port_2"
    end="frame_receptor_2.ingress_port" />
  <connection
    kind="axi4stream"
    version="21.1"
-   start="packet_filter_0.egress_port_3"
+   start="packet_filter_0.egress_port_2"
+   end="packet_switch_0.ingress_port_2" />
+ <connection
+   kind="axi4stream"
+   version="21.1"
+   start="packet_switch_0.egress_port_3"
    end="frame_receptor_3.ingress_port" />
  <connection
-   kind="clock"
+   kind="axi4stream"
    version="21.1"
-   start="clk_0.clk"
-   end="packet_filter_0.clock" />
+   start="packet_filter_0.egress_port_3"
+   end="packet_switch_0.ingress_port_3" />
  <connection
    kind="clock"
    version="21.1"
@@ -1043,6 +1102,16 @@
    version="21.1"
    start="clk_0.clk"
    end="frame_generator_3.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="packet_filter_0.clock" />
+ <connection
+   kind="clock"
+   version="21.1"
+   start="clk_0.clk"
+   end="packet_switch_0.clock" />
  <connection
    kind="clock"
    version="21.1"
@@ -1086,10 +1155,12 @@
   <parameter name="irqNumber" value="0" />
  </connection>
  <connection
-   kind="reset"
+   kind="interrupt"
    version="21.1"
-   start="clk_0.clk_reset"
-   end="packet_filter_0.reset" />
+   start="hps_0.f2h_irq1"
+   end="packet_switch_0.packet_filter_interrupt">
+  <parameter name="irqNumber" value="0" />
+ </connection>
  <connection
    kind="reset"
    version="21.1"
@@ -1110,6 +1181,16 @@
    version="21.1"
    start="clk_0.clk_reset"
    end="frame_generator_3.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="packet_filter_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="packet_switch_0.reset" />
  <connection
    kind="reset"
    version="21.1"

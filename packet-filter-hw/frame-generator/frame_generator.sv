@@ -1,10 +1,10 @@
-// frame_generator.sv
+// frame_generator.v
 
 // This file was auto-generated as a prototype implementation of a module
 // created in component editor.  It ties off all outputs to ground and
 // ignores all inputs.  It needs to be edited to make it do something
 // useful.
-//
+// 
 // This file will not be automatically regenerated.  You should check it in
 // to your version control system if you want to keep it.
 
@@ -16,6 +16,8 @@ module frame_generator (
 		input  wire        write,              //               .write
 		input  wire        chipselect,         //               .chipselect
 		input  wire [2:0]  address,            //               .address
+		input  wire        read,               //               .read
+		output wire [7:0]  readdata,           //               .readdata
 		output wire [15:0] egress_port_tdata,  //    egress_port.tdata
 		output wire        egress_port_tlast,  //               .tlast
 		input  wire        egress_port_tready, //               .tready
@@ -23,6 +25,8 @@ module frame_generator (
 	);
 
 	// TODO: Auto-generated HDL template
+
+	assign readdata = 8'b00000000;
 
 	assign egress_port_tvalid = 1'b0;
 
