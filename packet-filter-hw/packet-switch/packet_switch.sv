@@ -1,15 +1,16 @@
-// packet_switch.v
+// packet_switch.sv
 
-// This file was auto-generated as a prototype implementation of a module
-// created in component editor.  It ties off all outputs to ground and
-// ignores all inputs.  It needs to be edited to make it do something
-// useful.
-// 
-// This file will not be automatically regenerated.  You should check it in
-// to your version control system if you want to keep it.
+/**
+ * Register mapping
+ *
+ * Byte / mode | Name              | Meaning
+ *        0RW  |  Output port mask |  Enable signal for output ports (active-high).
+ */
 
 `timescale 1 ps / 1 ps
-module packet_switch (
+module packet_switch #(
+        parameter STUBBING = `STUBBING_PASSTHROUGH
+    ) (
 		input  wire        clk,                   //                   clock.clk
 		input  wire        reset,                 //                   reset.reset
 		input  wire [7:0]  writedata,             //          avalon_slave_0.writedata
@@ -57,42 +58,108 @@ module packet_switch (
 		output wire        irq                    // packet_filter_interrupt.irq
 	);
 
-	// TODO: Auto-generated HDL template
+    // registers
+    logic [`NUM_EGRESS_PORTS-1:0] egress_mask;
 
+generate
+if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
+
+    // output AXIS assignments
+	assign ingress_port_0_tready = egress_port_0_tready;
+	assign ingress_port_1_tready = egress_port_1_tready;
+	assign ingress_port_2_tready = egress_port_2_tready;
+	assign ingress_port_3_tready = egress_port_3_tready;
+	assign egress_port_0_tvalid  = ingress_port_0_tvalid;
+	assign egress_port_0_tdata   = ingress_port_0_tdata;
+	assign egress_port_0_tlast   = ingress_port_0_tlast;
+	assign egress_port_1_tvalid  = ingress_port_1_tvalid;
+	assign egress_port_1_tdata   = ingress_port_1_tdata;
+	assign egress_port_1_tlast   = ingress_port_1_tlast;
+	assign egress_port_2_tvalid  = ingress_port_2_tvalid;
+	assign egress_port_2_tdata   = ingress_port_2_tdata;
+	assign egress_port_2_tlast   = ingress_port_2_tlast;
+	assign egress_port_3_tvalid  = ingress_port_3_tvalid;
+	assign egress_port_3_tdata   = ingress_port_3_tdata;
+	assign egress_port_3_tlast   = ingress_port_3_tlast;
+
+end else begin: g_functional
+
+    // registers
+    logic [`NUM_EGRESS_PORTS-1:0] egress_mask;
+
+	// internal AXIS wires
+	axis_d_source_t ingress_port_source [`NUM_INGRESS_PORTS-1:0];
+	axis_d_sink_t   ingress_port_sink   [`NUM_INGRESS_PORTS-1:0];
+	axis_source_t   egress_port_source  [`NUM_EGRESS_PORTS-1:0];
+	axis_sink_t     egress_port_sink    [`NUM_EGRESS_PORTS-1:0];
+
+	// intermediate assignments
+    assign ingress_port_source[0].tvalid = ingress_port_0_tvalid;
+    assign ingress_port_source[0].tdata  = ingress_port_0_tdata;
+    assign ingress_port_source[0].tdest  = ingress_port_0_tdest;
+    assign ingress_port_source[0].tlast  = ingress_port_0_tlast;
+    assign ingress_port_source[1].tvalid = ingress_port_1_tvalid;
+    assign ingress_port_source[1].tdata  = ingress_port_1_tdata;
+    assign ingress_port_source[1].tdest  = ingress_port_1_tdest;
+    assign ingress_port_source[1].tlast  = ingress_port_1_tlast;
+    assign ingress_port_source[2].tvalid = ingress_port_2_tvalid;
+    assign ingress_port_source[2].tdata  = ingress_port_2_tdata;
+    assign ingress_port_source[2].tdest  = ingress_port_2_tdest;
+    assign ingress_port_source[2].tlast  = ingress_port_2_tlast;
+    assign ingress_port_source[3].tvalid = ingress_port_3_tvalid;
+    assign ingress_port_source[3].tdata  = ingress_port_3_tdata;
+    assign ingress_port_source[3].tdest  = ingress_port_3_tdest;
+    assign ingress_port_source[3].tlast  = ingress_port_3_tlast;
+	assign egress_port_sink[0].tready = egress_port_0_tready;
+	assign egress_port_sink[1].tready = egress_port_1_tready;
+	assign egress_port_sink[2].tready = egress_port_2_tready;
+	assign egress_port_sink[3].tready = egress_port_3_tready;
+
+    // output AXIS assignments
+	assign ingress_port_0_tready = ingress_port_sink[0].tready;
+	assign ingress_port_1_tready = ingress_port_sink[1].tready;
+	assign ingress_port_2_tready = ingress_port_sink[2].tready;
+	assign ingress_port_3_tready = ingress_port_sink[3].tready;
+	assign egress_port_0_tvalid  = egress_port_source[0].tvalid;
+	assign egress_port_0_tdata   = egress_port_source[0].tdata;
+	assign egress_port_0_tlast   = egress_port_source[0].tlast;
+	assign egress_port_1_tvalid  = egress_port_source[1].tvalid;
+	assign egress_port_1_tdata   = egress_port_source[1].tdata;
+	assign egress_port_1_tlast   = egress_port_source[1].tlast;
+	assign egress_port_2_tvalid  = egress_port_source[2].tvalid;
+	assign egress_port_2_tdata   = egress_port_source[2].tdata;
+	assign egress_port_2_tlast   = egress_port_source[2].tlast;
+	assign egress_port_3_tvalid  = egress_port_source[3].tvalid;
+	assign egress_port_3_tdata   = egress_port_source[3].tdata;
+	assign egress_port_3_tlast   = egress_port_source[3].tlast;
+
+end
+endgenerate
+
+    // register write interface
 	assign readdata = 8'b00000000;
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            egress_mask <= 4'b0;
+        end else if (chipselect && write) begin
+            case (address)
+                8'h0 : egress_mask <= writedata[3:0];
+            endcase
+        end
+    end
 
-	assign ingress_port_0_tready = 1'b0;
+    // register read interface
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            readdata <= 8'b0;
+        end else if (chipselect && read) begin
+            case (address)
+                8'h0 : readdata <= {4'b0, egress_mask};
+            endcase
+        end
+    end
 
-	assign ingress_port_1_tready = 1'b0;
-
-	assign ingress_port_2_tready = 1'b0;
-
-	assign ingress_port_3_tready = 1'b0;
-
-	assign egress_port_0_tvalid = 1'b0;
-
-	assign egress_port_0_tdata = 16'b0000000000000000;
-
-	assign egress_port_0_tlast = 1'b0;
-
-	assign egress_port_1_tvalid = 1'b0;
-
-	assign egress_port_1_tdata = 16'b0000000000000000;
-
-	assign egress_port_1_tlast = 1'b0;
-
-	assign egress_port_2_tvalid = 1'b0;
-
-	assign egress_port_2_tdata = 16'b0000000000000000;
-
-	assign egress_port_2_tlast = 1'b0;
-
-	assign egress_port_3_tvalid = 1'b0;
-
-	assign egress_port_3_tdata = 16'b0000000000000000;
-
-	assign egress_port_3_tlast = 1'b0;
-
+	// interrupt interface
 	assign irq = 1'b0;
 
 endmodule

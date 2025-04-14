@@ -2,6 +2,17 @@
 `ifndef _PACKET_FILTER_SVH_
 `define _PACKET_FILTER_SVH_
 
+/**
+ * Stubbing
+ */
+
+`define STUBBING_PASSTHROUGH 0 // only register interface
+`define STUBBING_FUNCTIONAL  1 // full functionality
+
+/**
+ * AXIS interfaces
+ */
+
 `define AXIS_DWIDTH 16
 `define AXIS_DEST_WIDTH 2
 

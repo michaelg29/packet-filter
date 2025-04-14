@@ -3,21 +3,21 @@
 # DO NOT MODIFY
 
 
-# 
+#
 # frame_generator "Frame Generator" v1.0
 #  2025.04.11.16:24:09
-# 
-# 
+#
+#
 
-# 
+#
 # request TCL package from ACDS 16.1
-# 
+#
 package require -exact qsys 16.1
 
 
-# 
+#
 # module frame_generator
-# 
+#
 set_module_property DESCRIPTION ""
 set_module_property NAME frame_generator
 set_module_property VERSION 1.0
@@ -32,9 +32,9 @@ set_module_property ALLOW_GREYBOX_GENERATION false
 set_module_property REPORT_HIERARCHY false
 
 
-# 
+#
 # file sets
-# 
+#
 add_fileset QUARTUS_SYNTH QUARTUS_SYNTH "" ""
 set_fileset_property QUARTUS_SYNTH TOP_LEVEL frame_generator
 set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
@@ -42,27 +42,27 @@ set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE true
 add_fileset_file frame_generator.sv SYSTEM_VERILOG PATH frame-generator/frame_generator.sv TOP_LEVEL_FILE
 
 
-# 
+#
 # parameters
-# 
+#
 
 
-# 
+#
 # module assignments
-# 
+#
 set_module_assignment embeddedsw.dts.group packet_filter
 set_module_assignment embeddedsw.dts.name frame_generator
 set_module_assignment embeddedsw.dts.vendor csee4840
 
 
-# 
+#
 # display items
-# 
+#
 
 
-# 
+#
 # connection point clock
-# 
+#
 add_interface clock clock end
 set_interface_property clock clockRate 0
 set_interface_property clock ENABLED true
@@ -74,9 +74,9 @@ set_interface_property clock SVD_ADDRESS_GROUP ""
 add_interface_port clock clk clk Input 1
 
 
-# 
+#
 # connection point reset
-# 
+#
 add_interface reset reset end
 set_interface_property reset associatedClock clock
 set_interface_property reset synchronousEdges DEASSERT
@@ -89,9 +89,9 @@ set_interface_property reset SVD_ADDRESS_GROUP ""
 add_interface_port reset reset reset Input 1
 
 
-# 
+#
 # connection point avalon_slave_0
-# 
+#
 add_interface avalon_slave_0 avalon end
 set_interface_property avalon_slave_0 addressUnits WORDS
 set_interface_property avalon_slave_0 associatedClock clock
@@ -118,7 +118,7 @@ set_interface_property avalon_slave_0 SVD_ADDRESS_GROUP ""
 add_interface_port avalon_slave_0 writedata writedata Input 8
 add_interface_port avalon_slave_0 write write Input 1
 add_interface_port avalon_slave_0 chipselect chipselect Input 1
-add_interface_port avalon_slave_0 address address Input 3
+add_interface_port avalon_slave_0 address address Input 8
 add_interface_port avalon_slave_0 read read Input 1
 add_interface_port avalon_slave_0 readdata readdata Output 8
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isFlash 0
@@ -127,9 +127,9 @@ set_interface_assignment avalon_slave_0 embeddedsw.configuration.isNonVolatileSt
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isPrintableDevice 0
 
 
-# 
+#
 # connection point egress_port
-# 
+#
 add_interface egress_port axi4stream start
 set_interface_property egress_port associatedClock clock
 set_interface_property egress_port associatedReset reset
