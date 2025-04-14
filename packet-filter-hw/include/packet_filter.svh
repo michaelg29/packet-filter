@@ -1,0 +1,32 @@
+
+`ifndef _PACKET_FILTER_SVH_
+`define _PACKET_FILTER_SVH_
+
+`define AXIS_DWIDTH 16
+`define AXIS_DEST_WIDTH 2
+
+`define NUM_INGRESS_PORTS 4
+`define NUM_EGRESS_PORTS 4
+
+// AXIS data source
+typdef struct {
+    logic [`AXIS_DWIDTH-1:0] tdata;
+    logic                    tvalid;
+    logic                    tlast;
+} axis_source_t;
+
+// AXIS data source with destination field
+typdef struct {
+    logic [`AXIS_DWIDTH-1:0]     tdata;
+    logic                        tvalid;
+    logic                        tlast;
+    logic [`AXIS_DEST_WIDTH-1:0] tdest;
+} axis_d_source_t;
+
+// AXIS data sink
+typedef struct {
+    logic tready;
+} axis_sink_t;
+typedef axis_sink_t axis_d_sink_t;
+
+`endif // _PACKET_FILTER_SVH_
