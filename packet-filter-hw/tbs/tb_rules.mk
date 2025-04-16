@@ -3,11 +3,13 @@
 DUT_TOP ?= top
 SVFILES ?= $(DUT_TOP).sv
 VLOG_DEFINES ?=
+VLOG_GENERICS ?=
 
 # create simulator object
 obj_dir/V$(DUT_TOP): $(SVFILES) $(DUT_TOP).cpp
 	verilator -trace -Wall -cc $(SVFILES) -exe $(DUT_TOP).cpp \
 		$(VLOG_DEFINES) \
+		$(VLOG_GENERICS) \
 		-top-module $(DUT_TOP) \
 		-Wno-DECLFILENAME -Wno-UNUSEDSIGNAL
 	cd obj_dir && make -j -f V$(DUT_TOP).mk

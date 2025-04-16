@@ -52,12 +52,12 @@ int main(int argc, const char ** argv, const char ** env) {
         break;
 
       case 130:
-        dut->reset = 1;
-        dut->rst_rptr = 0;
+        dut->wrst = 1;
+        dut->rst_rptr = 15;
         dut->rst_wptr = 0b01000000000;
         break;
       case 150:
-        dut->reset = 0;
+        dut->wrst = 0;
         break;
 
       case 170:
@@ -69,12 +69,11 @@ int main(int argc, const char ** argv, const char ** env) {
         break;
 
       case 230:
-        dut->reset = 1;
+        dut->rrst = 1;
         dut->rst_rptr = 0b01000000000;
-        dut->rst_wptr = dut->wptr;
         break;
       case 250:
-        dut->reset = 0;
+        dut->rrst = 0;
         break;
 
       case 270:

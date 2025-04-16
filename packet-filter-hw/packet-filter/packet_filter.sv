@@ -3,8 +3,8 @@
 /**
  * Register mapping
  *
- * Byte / mode | Name             | Meaning
- *        0RW  |  Input port mask |  Enable signal for input ports (active-high).
+ * Byte / mode | Name               | Meaning
+ *        0RW  |  ingress_port_mask |  Enable signal for input ports (active-high).
  */
 
 `include "../include/packet_filter.svh"
@@ -61,7 +61,7 @@ module packet_filter #(
 	);
 
     // registers
-    logic [`NUM_INGRESS_PORTS-1:0] ingress_mask;
+    logic [`NUM_INGRESS_PORTS-1:0] ingress_port_mask;
 
 generate
 if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
@@ -140,7 +140,7 @@ end else begin: g_functional
 	    .clk  (clk),
 	    .reset(reset),
 
-	    .en(ingress_mask),
+	    .en(ingress_port_mask),
 
 	    .ingress_source(ingress_port_source),
 	    .ingress_sink  (ingress_port_sink),
@@ -155,10 +155,10 @@ endgenerate
 	assign readdata = 8'b00000000;
     always_ff @(posedge clk) begin
         if (reset) begin
-            ingress_mask <= 4'b0;
+            ingress_port_mask <= 4'b0;
         end else if (chipselect && write) begin
             case (address)
-                8'h0 : ingress_mask <= writedata[3:0];
+                8'h0 : ingress_port_mask <= writedata[3:0];
             endcase
         end
     end
@@ -169,7 +169,7 @@ endgenerate
             readdata <= 8'b0;
         end else if (chipselect && read) begin
             case (address)
-                8'h0 : readdata <= {4'b0, ingress_mask};
+                8'h0 : readdata <= {4'b0, ingress_port_mask};
             endcase
         end
     end
