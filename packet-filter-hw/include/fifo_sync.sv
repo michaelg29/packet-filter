@@ -8,6 +8,7 @@
  *   - CAN_RESET_POINTERS: whether external control can reset the read and write pointers
  *
  * Configurable parameters for the Cyclone 5CSEMA5:
+ *   - ADDR_WIDTH: address width = clog2(NUM_CYCLONE_5CSEMA5_BLOCKS) + 9
  *   - W_EL: data width (1 - 20)
  *   - NUM_CYCLONE_5CSEMA5_BLOCKS: number of 1280-Byte-blocks (512x20-word-blocks)
  */
@@ -22,31 +23,38 @@ module fifo_sync #(
     input  logic reset,
 
     // read interface
-    input  logic            rrst,
     input  logic            ren,
     output logic [W_EL-1:0] rdata,
     output logic            empty,
 
     // write interface
-    input  logic            wrst,
     input  logic [W_EL-1:0] wdata,
     input  logic            wen,
     output logic            full,
 
-    // cursor control
+    // cursor control (don't care if CAN_RESET_POINTERS == 0)
+    input  logic                rrst,
+    input  logic                wrst,
     input  logic [ADDR_WIDTH:0] rst_rptr,
     input  logic [ADDR_WIDTH:0] rst_wptr,
     output logic [ADDR_WIDTH:0] rptr,
     output logic [ADDR_WIDTH:0] wptr
 );
 
-    // memory
+    /* Assertions related to parameters. */
+    initial begin
+        if (
+            NUM_CYCLONE_5CSEMA5_BLOCKS != 0 && (
+                (ADDR_WIDTH != $clog2(NUM_CYCLONE_5CSEMA5_BLOCKS) + 9) ||
+                (W_EL > 20)
+            )
+        )
+            $error("Invalid generics in fifo_sync.");
+            $finish;
+    end
+
+    // memory valid signals
     logic mem_wvalid, mem_rvalid;
-`ifdef CYCLONE_5CSEMA5
-    logic [W_EL-1:0] mem_rdata [NUM_CYCLONE_5CSEMA5_BLOCKS-1:0];
-`else
-    logic [W_EL-1:0] mem [2**ADDR_WIDTH-1:0];
-`endif
 
     // cursors
     logic [ADDR_WIDTH:0] next_rptr;
@@ -126,12 +134,11 @@ module fifo_sync #(
         end
     end
 
-`ifdef CYCLONE_5CSEMA5
     // generate each block of memory
     genvar mem_block_i;
     generate
-        if (NUM_CYCLONE_5CSEMA5_BLOCKS == 1) begin: g_single_block
-            logic [W_EL-1:0] mem [511:0];
+        if (NUM_CYCLONE_5CSEMA5_BLOCKS == 0) begin: g_mem
+            logic [W_EL-1:0] mem [2**ADDR_WIDTH-1:0];
 
             // memory logic
             always_ff @(posedge clk) begin
@@ -140,7 +147,18 @@ module fifo_sync #(
                 end
                 rdata <= mem[rptr[ADDR_WIDTH-1:0]];
             end
+        end else if (NUM_CYCLONE_5CSEMA5_BLOCKS == 1) begin: g_single_block
+            logic [W_EL-1:0] mem [511:0];
+
+            // memory logic
+            always_ff @(posedge clk) begin
+                if (mem_wvalid) begin
+                    mem[wptr[8:0]] <= wdata;
+                end
+                rdata <= mem[rptr[8:0]];
+            end
         end else begin: g_mult_blocks
+            logic [W_EL-1:0] mem_rdata [NUM_CYCLONE_5CSEMA5_BLOCKS-1:0];
             for (mem_block_i = 0; mem_block_i < NUM_CYCLONE_5CSEMA5_BLOCKS; ++mem_block_i) begin
                 // current memory block
                 logic [W_EL-1:0] mem [511:0];
@@ -162,19 +180,22 @@ module fifo_sync #(
             assign rdata = mem_rdata[rptr[ADDR_WIDTH-1:9]];
         end
     endgenerate
-`else
-    // memory logic
-    always_ff @(posedge clk) begin
-        if (mem_wvalid) begin
-            mem[wptr[ADDR_WIDTH-1:0]] <= wdata;
-        end
-        rdata <= mem[rptr[ADDR_WIDTH-1:0]];
-    end
-`endif
 
     // write intermediate signals
     assign ptr_overlap = (next_rptr[ADDR_WIDTH-1:0] === next_wptr[ADDR_WIDTH-1:0]) ? 1'b1 : 1'b0;
     assign next_full = (ptr_overlap && next_rptr[ADDR_WIDTH] !== next_wptr[ADDR_WIDTH]) ? 1'b1 : 1'b0;
     assign next_empty =  (ptr_overlap && next_rptr[ADDR_WIDTH] === next_wptr[ADDR_WIDTH]) ? 1'b1 : 1'b0;
+
+    // assert FIFO displays full until a read completes
+    assertion_fifo_sync_full_until_read : assert property(
+        @(posedge clk) disable iff (rrst || wrst)
+        $rose(full) |=> full || $past(ren, 1)
+    ) else $error("fifo_sync", $sformatf("assertion_fifo_sync_full_until_read failed at %0t", $realtime));
+
+    // assert FIFO displays empty until a write completes
+    assertion_fifo_sync_empty_until_write : assert property(
+        @(posedge clk) disable iff (rrst || wrst)
+        $rose(empty) |=> empty || $past(wen, 1)
+    ) else $error("fifo_sync", $sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
 
 endmodule

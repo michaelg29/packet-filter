@@ -47,7 +47,8 @@ module ingress_filter (
     fifo_sync #(
         .ADDR_WIDTH(11),
         .W_EL(20),
-        .NUM_CYCLONE_5CSEMA5_BLOCKS(4)
+        .NUM_CYCLONE_5CSEMA5_BLOCKS(4),
+        .CAN_RESET_POINTERS(1)
     ) u_frame_fifo (
         .clk      (clk),
         .reset    (reset),
@@ -57,6 +58,8 @@ module ingress_filter (
         .wdata    (frame_wdata),    // from ingress
         .wen      (frame_wen),      // from switch FSM
         .full     (frame_full),     // to input FSM
+        .rrst     (frame_rrst),     //
+        .wrst     (frame_wrst),     //
         .rst_rptr (frame_rst_rptr), // from switch FSM
         .rst_wptr (frame_rst_wptr), // from switch FSM
         .rptr     (frame_rptr),     // to switch FSM
@@ -67,9 +70,26 @@ module ingress_filter (
      * Sideband FIFO.
      *
      * Using 1 block
-     *
-     * TODO: allow for dual access because under-utilizing memory
      */
+    fifo_sync #(
+        .ADDR_WIDTH(9),
+        .W_EL(20),
+        .NUM_CYCLONE_5CSEMA5_BLOCKS(1),
+        .CAN_RESET_POINTERS(0)
+    ) u_sideband_fifo (
+        .clk      (clk),
+        .reset    (reset),
+        .ren      (frame_ren),      // from switch FSM
+        .rdata    (frame_rdata),    // to egress
+        .empty    (frame_empty),    // to switch FSM
+        .wdata    (frame_wdata),    // from ingress
+        .wen      (frame_wen),      // from switch FSM
+        .full     (frame_full),     // to input FSM
+        .rst_rptr (),
+        .rst_wptr (),
+        .rptr     (),
+        .wptr     ()
+    );
 
     // unused signals
     logic __unused_okay__;

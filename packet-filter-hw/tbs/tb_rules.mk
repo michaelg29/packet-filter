@@ -11,7 +11,8 @@ obj_dir/V$(DUT_TOP): $(SVFILES) $(DUT_TOP).cpp
 		$(VLOG_DEFINES) \
 		$(VLOG_GENERICS) \
 		-top-module $(DUT_TOP) \
-		-Wno-DECLFILENAME -Wno-UNUSEDSIGNAL
+		-Wno-DECLFILENAME -Wno-UNUSEDSIGNAL -Wno-MISINDENT \
+		-assert
 	cd obj_dir && make -j -f V$(DUT_TOP).mk
 
 # run simulator object
