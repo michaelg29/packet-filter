@@ -1,4 +1,4 @@
-/* * Device driver for the VGA video generator
+/* * Device driver for the ingress packet filter
  *
  * A Platform device implemented using the misc subsystem
  *
@@ -12,10 +12,10 @@
  * http://free-electrons.com/docs/
  *
  * "make" to build
- * insmod vga_ball.ko
+ * insmod packet_filter.ko
  *
  * Check code style with
- * checkpatch.pl --file --no-tree vga_ball.c
+ * checkpatch.pl --file --no-tree packet_filter.c
  */
 
 #include <linux/module.h>
@@ -31,49 +31,25 @@
 #include <linux/of_address.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include "vga_ball.h"
+#include "packet_filter.h"
 
-#define DRIVER_NAME "vga_ball"
+#define DRIVER_NAME "packet_filter"
 
 /* Device registers */
-#define BG_RED(x) (x)
-#define BG_GREEN(x) ((x)+1)
-#define BG_BLUE(x) ((x)+2)
-#define BALL_XLO(x) ((x)+3)
-#define BALL_XHI(x) ((x)+4)
-#define BALL_YLO(x) ((x)+5)
-#define BALL_YHI(x) ((x)+6)
+#define INGRESS_PORT_FILTER(x) ((x)+0)
 
 /*
  * Information about our device
  */
-struct vga_ball_dev {
+struct packet_filter_dev {
 	struct resource res; /* Resource: our registers */
 	void __iomem *virtbase; /* Where registers can be accessed in memory */
-        vga_ball_color_t  background;
-        vga_ball_coords_t coords;
+        packet_filter_ingress_port_mask_t ingress_port_mask;
 } dev;
 
-/*
- * Write segments of a single digit
- * Assumes digit is in range and the device information has been set up
- */
-static void write_background(vga_ball_color_t *background)
-{
-	iowrite8(background->red,   BG_RED(dev.virtbase) );
-	iowrite8(background->green, BG_GREEN(dev.virtbase) );
-	iowrite8(background->blue,  BG_BLUE(dev.virtbase) );
-	dev.background = *background;
-}
-
-static void write_coords(vga_ball_coords_t *coords)
-{
-  pr_info("write_coords %d and %d\n", coords->x, coords->y);
-  iowrite8((unsigned char)(coords->x),      BALL_XLO(dev.virtbase) );
-  iowrite8((unsigned char)(coords->x >> 8), BALL_XHI(dev.virtbase) );
-  iowrite8((unsigned char)(coords->y),      BALL_YLO(dev.virtbase) );
-  iowrite8((unsigned char)(coords->y >> 8), BALL_YHI(dev.virtbase) );
-  dev.coords = *coords;
+static void write_ingress_port_mask(packet_filter_ingress_port_mask_t *mask) {
+  iowrite8(mask->mask, INGRESS_PORT_FILTER(dev.virtbase));
+  dev.ingress_port_mask = *mask;
 }
 
 /*
@@ -81,39 +57,24 @@ static void write_coords(vga_ball_coords_t *coords)
  * Read or write the segments on single digits.
  * Note extensive error checking of arguments
  */
-static long vga_ball_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+static long packet_filter_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
-	vga_ball_arg_t vla;
-
+	packet_filter_arg_t vla;
 
   pr_info("ioctl %d\n", cmd);
 
 	switch (cmd) {
-	case VGA_BALL_WRITE_BACKGROUND:
-		if (copy_from_user(&vla, (vga_ball_arg_t *) arg,
-				   sizeof(vga_ball_arg_t)))
+	case PACKET_FILTER_WRITE_INGRESS_PORT_MASK:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
 			return -EACCES;
-		write_background(&vla.background);
+		write_ingress_port_mask(&vla.ingress_port_mask);
 		break;
 
-	case VGA_BALL_READ_BACKGROUND:
-	  	vla.background = dev.background;
-		if (copy_to_user((vga_ball_arg_t *) arg, &vla,
-				 sizeof(vga_ball_arg_t)))
-			return -EACCES;
-		break;
-
-	case VGA_BALL_WRITE_COORDS:
-		if (copy_from_user(&vla, (vga_ball_arg_t *) arg,
-				   sizeof(vga_ball_arg_t)))
-			return -EACCES;
-		write_coords(&vla.coords);
-		break;
-
-	case VGA_BALL_READ_COORDS:
-	  	vla.coords = dev.coords;
-		if (copy_to_user((vga_ball_arg_t *) arg, &vla,
-				 sizeof(vga_ball_arg_t)))
+	case PACKET_FILTER_READ_INGRESS_PORT_MASK:
+	  vla.ingress_port_mask = dev.ingress_port_mask;
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
 			return -EACCES;
 		break;
 
@@ -125,30 +86,29 @@ static long vga_ball_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 }
 
 /* The operations our device knows how to do */
-static const struct file_operations vga_ball_fops = {
+static const struct file_operations packet_filter_fops = {
 	.owner		= THIS_MODULE,
-	.unlocked_ioctl = vga_ball_ioctl,
+	.unlocked_ioctl = packet_filter_ioctl,
 };
 
 /* Information about our device for the "misc" framework -- like a char dev */
-static struct miscdevice vga_ball_misc_device = {
+static struct miscdevice packet_filter_misc_device = {
 	.minor		= MISC_DYNAMIC_MINOR,
 	.name		= DRIVER_NAME,
-	.fops		= &vga_ball_fops,
+	.fops		= &packet_filter_fops,
 };
 
 /*
  * Initialization code: get resources (registers) and display
  * a welcome message
  */
-static int __init vga_ball_probe(struct platform_device *pdev)
+static int __init packet_filter_probe(struct platform_device *pdev)
 {
-        vga_ball_color_t beige = { 0xf9, 0xe4, 0xb7 };
-        vga_ball_coords_t coords = { (unsigned short)BALL_INIT_X, (unsigned short)BALL_INIT_Y };
+  packet_filter_ingress_port_mask_t ingress_mask = { 0b0000 };
 	int ret;
 
-	/* Register ourselves as a misc device: creates /dev/vga_ball */
-	ret = misc_register(&vga_ball_misc_device);
+	/* Register ourselves as a misc device: creates /dev/packet_filter */
+	ret = misc_register(&packet_filter_misc_device);
 
 	/* Get the address of our registers from the device tree */
 	ret = of_address_to_resource(pdev->dev.of_node, 0, &dev.res);
@@ -171,64 +131,63 @@ static int __init vga_ball_probe(struct platform_device *pdev)
 		goto out_release_mem_region;
 	}
 
-	/* Set an initial color */
-  write_background(&beige);
-  write_coords(&coords);
+	/* Set initial values */
+	write_ingress_port_mask(&ingress_mask);
 
 	return 0;
 
 out_release_mem_region:
 	release_mem_region(dev.res.start, resource_size(&dev.res));
 out_deregister:
-	misc_deregister(&vga_ball_misc_device);
+	misc_deregister(&packet_filter_misc_device);
 	return ret;
 }
 
 /* Clean-up code: release resources */
-static int vga_ball_remove(struct platform_device *pdev)
+static int packet_filter_remove(struct platform_device *pdev)
 {
 	iounmap(dev.virtbase);
 	release_mem_region(dev.res.start, resource_size(&dev.res));
-	misc_deregister(&vga_ball_misc_device);
+	misc_deregister(&packet_filter_misc_device);
 	return 0;
 }
 
 /* Which "compatible" string(s) to search for in the Device Tree */
 #ifdef CONFIG_OF
-static const struct of_device_id vga_ball_of_match[] = {
-	{ .compatible = "csee4840,vga_ball-1.0" },
+static const struct of_device_id packet_filter_of_match[] = {
+	{ .compatible = "csee4840,packet_filter-1.0" },
 	{},
 };
-MODULE_DEVICE_TABLE(of, vga_ball_of_match);
+MODULE_DEVICE_TABLE(of, packet_filter_of_match);
 #endif
 
 /* Information for registering ourselves as a "platform" driver */
-static struct platform_driver vga_ball_driver = {
+static struct platform_driver packet_filter_driver = {
 	.driver	= {
 		.name	= DRIVER_NAME,
 		.owner	= THIS_MODULE,
-		.of_match_table = of_match_ptr(vga_ball_of_match),
+		.of_match_table = of_match_ptr(packet_filter_of_match),
 	},
-	.remove	= __exit_p(vga_ball_remove),
+	.remove	= __exit_p(packet_filter_remove),
 };
 
 /* Called when the module is loaded: set things up */
-static int __init vga_ball_init(void)
+static int __init packet_filter_init(void)
 {
 	pr_info(DRIVER_NAME ": init\n");
-	return platform_driver_probe(&vga_ball_driver, vga_ball_probe);
+	return platform_driver_probe(&packet_filter_driver, packet_filter_probe);
 }
 
 /* Calball when the module is unloaded: release resources */
-static void __exit vga_ball_exit(void)
+static void __exit packet_filter_exit(void)
 {
-	platform_driver_unregister(&vga_ball_driver);
+	platform_driver_unregister(&packet_filter_driver);
 	pr_info(DRIVER_NAME ": exit\n");
 }
 
-module_init(vga_ball_init);
-module_exit(vga_ball_exit);
+module_init(packet_filter_init);
+module_exit(packet_filter_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Stephen A. Edwards, Columbia University");
-MODULE_DESCRIPTION("VGA ball driver");
+MODULE_AUTHOR("PacketFilter group");
+MODULE_DESCRIPTION("Packet filter driver");
