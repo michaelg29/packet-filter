@@ -44,8 +44,7 @@ TARFILES = Makefile \
 	$(BOARD_INFO) \
 	$(SRF) \
 	ip/intr_capturer/intr_capturer.v \
-	ip/intr_capturer/intr_capturer_hw.tcl \
-	packet_filter.sv
+	ip/intr_capturer/intr_capturer_hw.tcl
 
 TARFILE = packet-filter-hw.tar.gz
 

@@ -7,6 +7,8 @@
  *        0RW  |  Output port mask |  Enable signal for output ports (active-high).
  */
 
+`include "../include/packet_filter.svh"
+
 `timescale 1 ps / 1 ps
 module packet_switch #(
         parameter STUBBING = `STUBBING_PASSTHROUGH
@@ -137,7 +139,6 @@ end
 endgenerate
 
     // register write interface
-	assign readdata = 8'b00000000;
     always_ff @(posedge clk) begin
         if (reset) begin
             egress_mask <= 4'b0;

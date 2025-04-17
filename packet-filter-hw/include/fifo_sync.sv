@@ -159,7 +159,7 @@ module fifo_sync #(
             end
         end else begin: g_mult_blocks
             logic [W_EL-1:0] mem_rdata [NUM_CYCLONE_5CSEMA5_BLOCKS-1:0];
-            for (mem_block_i = 0; mem_block_i < NUM_CYCLONE_5CSEMA5_BLOCKS; ++mem_block_i) begin
+            for (mem_block_i = 0; mem_block_i < NUM_CYCLONE_5CSEMA5_BLOCKS; ++mem_block_i) begin: g_cyclone_block
                 // current memory block
                 logic [W_EL-1:0] mem [511:0];
 

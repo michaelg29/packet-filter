@@ -1,9 +1,6 @@
 
-typedef union {
-    logic [47:0] bits;
-    logic [ 7:0] bytes  [5:0];
-    logic [15:0] hwords [2:0];
-} mac_t;
+`include "../include/packet_filter.svh"
+`include "packet_filter.svh"
 
 module dest_calculator (
     input  logic clk,
@@ -16,12 +13,15 @@ module dest_calculator (
     output logic [ 1:0] dest
 );
 
-    mac_t dst_mac, next_dst_mac;
+    logic [15:0] dst_mac [2:0];
+    logic [15:0] next_dst_mac [2:0];
     logic [1:0] cnt, next_cnt;
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            dst_mac.bits <= 48'b0;
+            dst_mac[0] <= 16'h0;
+            dst_mac[1] <= 16'h0;
+            dst_mac[2] <= 16'h0;
             cnt <= 2'b0;
         end else begin
             dst_mac <= next_dst_mac;
@@ -31,9 +31,9 @@ module dest_calculator (
 
     always_comb begin: g_next_dst
         if (dst_mac_valid) begin
-            next_dst_mac.hwords[2] = dst_mac.hwords[1];
-            next_dst_mac.hwords[1] = dst_mac.hwords[0];
-            next_dst_mac.hwords[0] = data;
+            next_dst_mac[2] = dst_mac[1];
+            next_dst_mac[1] = dst_mac[0];
+            next_dst_mac[0] = data;
         end else begin
             next_dst_mac = dst_mac;
         end
@@ -49,7 +49,7 @@ module dest_calculator (
         end
     end
 
-    assign dest = dst_mac.bits[1:0];
+    assign dest = dst_mac[0][1:0];
     assign dest_valid = (cnt === 2'b11) ? 1'b1 : 1'b0;
 
 endmodule

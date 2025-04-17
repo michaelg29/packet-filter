@@ -42,7 +42,7 @@ module ingress_filter (
      *
      * TODO: add parity bits to pad 16-bit streaming words to 20-bit memory words
      */
-    assign frame_wen = ingress_source.tvalid & frame_active;
+    /*assign frame_wen = ingress_source.tvalid & frame_active;
     assign frame_wdata = {4'b0, ingress_source.tdata};
     fifo_sync #(
         .ADDR_WIDTH(11),
@@ -64,14 +64,14 @@ module ingress_filter (
         .rst_wptr (frame_rst_wptr), // from switch FSM
         .rptr     (frame_rptr),     // to switch FSM
         .wptr     (frame_wptr)      // to switch FSM
-    );
+    );*/
 
     /*
      * Sideband FIFO.
      *
      * Using 1 block
      */
-    fifo_sync #(
+    /*fifo_sync #(
         .ADDR_WIDTH(9),
         .W_EL(20),
         .NUM_CYCLONE_5CSEMA5_BLOCKS(1),
@@ -93,7 +93,7 @@ module ingress_filter (
 
     // unused signals
     logic __unused_okay__;
-    assign __unused_okay__ = |{frame_rdata[19:16]};
+    assign __unused_okay__ = |{frame_rdata[19:16]};*/
 
 
 endmodule

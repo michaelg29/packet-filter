@@ -72,19 +72,19 @@ if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 	assign ingress_port_2_tready = egress_port_2_tready;
 	assign ingress_port_3_tready = egress_port_3_tready;
 	assign egress_port_0_tvalid  = ingress_port_0_tvalid;
-	assign egress_port_0_tdest   = ingress_port_0_tdest;
+	assign egress_port_0_tdest   = '0;
 	assign egress_port_0_tdata   = ingress_port_0_tdata;
 	assign egress_port_0_tlast   = ingress_port_0_tlast;
 	assign egress_port_1_tvalid  = ingress_port_1_tvalid;
-	assign egress_port_1_tdest   = ingress_port_1_tdest;
+	assign egress_port_1_tdest   = '0;
 	assign egress_port_1_tdata   = ingress_port_1_tdata;
 	assign egress_port_1_tlast   = ingress_port_1_tlast;
 	assign egress_port_2_tvalid  = ingress_port_2_tvalid;
-	assign egress_port_2_tdest   = ingress_port_2_tdest;
+	assign egress_port_2_tdest   = '0;
 	assign egress_port_2_tdata   = ingress_port_2_tdata;
 	assign egress_port_2_tlast   = ingress_port_2_tlast;
 	assign egress_port_3_tvalid  = ingress_port_3_tvalid;
-	assign egress_port_3_tdest   = ingress_port_3_tdest;
+	assign egress_port_3_tdest   = '0;
 	assign egress_port_3_tdata   = ingress_port_3_tdata;
 	assign egress_port_3_tlast   = ingress_port_3_tlast;
 
@@ -136,7 +136,7 @@ end else begin: g_functional
 	assign egress_port_3_tdata   = egress_port_source[3].tdata;
 	assign egress_port_3_tlast   = egress_port_source[3].tlast;
 
-	ingress_filter #() u_filter[`NUM_INGRESS_PORTS-1:0] (
+	ingress_filter u_filter[`NUM_INGRESS_PORTS-1:0] (
 	    .clk  (clk),
 	    .reset(reset),
 
@@ -152,7 +152,6 @@ end
 endgenerate
 
     // register write interface
-	assign readdata = 8'b00000000;
     always_ff @(posedge clk) begin
         if (reset) begin
             ingress_port_mask <= 4'b0;

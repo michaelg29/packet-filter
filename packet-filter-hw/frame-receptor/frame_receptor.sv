@@ -11,6 +11,8 @@
  *        4R   |         Checksum | Payload checksum byte 3.
  */
 
+`include "../include/packet_filter.svh"
+
 `timescale 1 ps / 1 ps
 module frame_receptor #(
         parameter STUBBING = `STUBBING_PASSTHROUGH
@@ -29,6 +31,9 @@ module frame_receptor #(
 		input  wire        ingress_port_tlast   //               .tlast
 	);
 
+	/* Register file. */
+	logic [7:0] inter_frame_wait;
+
 generate
 if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 
@@ -40,13 +45,12 @@ end
 endgenerate
 
     // register write interface
-	assign readdata = 8'b00000000;
     always_ff @(posedge clk) begin
         if (reset) begin
-
+            inter_frame_wait <= 8'h0;
         end else if (chipselect && write) begin
             case (address)
-
+                8'h0 : inter_frame_wait <= writedata[7:0];
             endcase
         end
     end
@@ -57,12 +61,9 @@ endgenerate
             readdata <= 8'b0;
         end else if (chipselect && read) begin
             case (address)
-
+                8'h0 : readdata <= inter_frame_wait;
             endcase
         end
     end
-
-	// interrupt interface
-	assign irq = 1'b0;
 
 endmodule

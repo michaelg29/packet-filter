@@ -27,6 +27,8 @@
  *       20R   |         Checksum | Payload checksum byte 3.
  */
 
+`include "../include/packet_filter.svh"
+
 `timescale 1 ps / 1 ps
 module frame_generator #(
         parameter STUBBING = `STUBBING_PASSTHROUGH
@@ -45,6 +47,9 @@ module frame_generator #(
 		output wire        egress_port_tvalid  //               .tvalid
 	);
 
+	/* Register file. */
+	logic [47:0] destination_mac;
+
 generate
 if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 
@@ -58,13 +63,12 @@ end
 endgenerate
 
     // register write interface
-	assign readdata = 8'b00000000;
     always_ff @(posedge clk) begin
         if (reset) begin
-
+            destination_mac <= 48'h0;
         end else if (chipselect && write) begin
             case (address)
-
+                8'h0 : destination_mac[7:0] <= writedata[7:0];
             endcase
         end
     end
@@ -75,12 +79,9 @@ endgenerate
             readdata <= 8'b0;
         end else if (chipselect && read) begin
             case (address)
-
+                8'h0 : readdata <= destination_mac[7:0];
             endcase
         end
     end
-
-	// interrupt interface
-	assign irq = 1'b0;
 
 endmodule
