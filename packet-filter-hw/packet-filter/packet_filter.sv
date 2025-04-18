@@ -7,7 +7,7 @@
  *        0RW  |  ingress_port_mask |  Enable signal for input ports (active-high).
  */
 
-`include "../include/packet_filter.svh"
+`include "packet_filter.svh"
 
 `timescale 1 ps / 1 ps
 module packet_filter #(

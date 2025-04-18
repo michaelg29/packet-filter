@@ -5,11 +5,17 @@ SVFILES ?= $(DUT_TOP).sv
 VLOG_DEFINES ?=
 VLOG_GENERICS ?=
 
+INCLUDE_FLAG = -I../../include
+ifdef SYS_PORTION
+	INCLUDE_FLAG += -I../../$(SYS_PORTION)
+endif
+
 # create simulator object
 obj_dir/V$(DUT_TOP): $(SVFILES) $(DUT_TOP).cpp
 	verilator -trace -Wall -cc $(SVFILES) -exe $(DUT_TOP).cpp \
 		$(VLOG_DEFINES) \
 		$(VLOG_GENERICS) \
+		$(INCLUDE_FLAG) \
 		-top-module $(DUT_TOP) \
 		-Wno-DECLFILENAME -Wno-UNUSEDSIGNAL -Wno-MISINDENT \
 		-assert
