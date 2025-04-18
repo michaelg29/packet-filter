@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 
 typedef struct {
   char valid;
@@ -10,57 +12,117 @@ typedef struct {
 } switch_input;
 
 typedef struct {
-  char grant[4]; // grant signal to each ingress port
-  char select; // select signal to multiplexer
+  char grant[4];
+  char select;
 } switch_output;
 
-// global state variables
 int cur_grant[4];
-int next_rr[4]; // next scheduled ingress for each egress port
+int next_rr[4];
 
-switch_output arbitrate(switch_input input) {
-  // simulate RR for each egress
+int waiting[4];
+int errors = 0;
+
+void reset_state() {
   for (int i = 0; i < 4; i++) {
-    if (cur_grant[i] && input.ingress[i].valid) {
-
-      if (input.ingress[i].last) {
-        // update RR
-
-      }
-    }
+    cur_grant[i] = -1;
+    next_rr[i] = 0;
   }
 }
 
-// global monitor variables
-int waiting[4];
-int errors;
+switch_output arbitrate(switch_input input, int egress, int cycle) {
+  switch_output output;
+  memset(&output, 0, sizeof(output));
+  output.select = -1;
 
-void collect_stats(switch_input input, switch_output output) {
-  // verify correspondance between grant and selection
-  for (int i = 0; i < 4; i++) {
-    if (i == output.select && !grant[i]) {
-      errors++;
-    }
-    if (i != output.select && grant[i]) {
-      errors++;
+  if (cur_grant[egress] != -1) {
+    int locked = cur_grant[egress];
+    axis_input pkt = input.ingress[locked];
+
+    if (pkt.valid && pkt.dest == egress) {
+      output.grant[locked] = 1;
+      output.select = locked;
+
+      if (pkt.last) {
+        cur_grant[egress] = -1;
+        next_rr[egress] = (locked + 1) % 4;
+        printf("Cycle %d, Egress %d: Frame ended at ingress %d. RR now %d.\n",
+               cycle, egress, locked, next_rr[egress]);
+      }
+      return output;
+    } else {
+      printf("Cycle %d, Egress %d: Unexpected loss of lock at ingress %d.\n",
+             cycle, egress, locked);
+      cur_grant[egress] = -1;
+      next_rr[egress] = (locked + 1) % 4;
     }
   }
 
-  // allocate wait times based on valid signal
   for (int i = 0; i < 4; i++) {
-    if (input.ingress[i].valid && !output.grant[i]) {
+    int idx = (next_rr[egress] + i) % 4;
+    axis_input pkt = input.ingress[idx];
+
+    if (pkt.valid && pkt.dest == egress) {
+      cur_grant[egress] = idx;
+      output.grant[idx] = 1;
+      output.select = idx;
+
+      printf("Cycle %d, Egress %d: Locking onto ingress %d.\n", cycle, egress, idx);
+
+      if (pkt.last) {
+        cur_grant[egress] = -1;
+        next_rr[egress] = (idx + 1) % 4;
+        printf("Cycle %d, Egress %d: Immediate frame end at ingress %d. RR now %d.\n",
+               cycle, egress, idx, next_rr[egress]);
+      }
+      break;
+    }
+  }
+
+  if (output.select == -1) output.select = 0;
+  return output;
+}
+
+void collect_stats(switch_input input, switch_output output, int egress, int cycle) {
+  for (int i = 0; i < 4; i++) {
+    if (input.ingress[i].valid && input.ingress[i].dest == egress && !output.grant[i]) {
       waiting[i]++;
+      printf("Cycle %d: Ingress %d valid but waiting for egress %d (waiting total: %d)\n",
+             cycle, i, egress, waiting[i]);
     }
   }
 }
 
 int main() {
-  input.ingress[0].valid = 1;
-  collect_stats(input0, arbitrate(input0)); // CC0
-  collect_stats(input1, arbitrate(input1)); // CC1
-  collect_stats(input2, arbitrate(input2)); // CC2
-  collect_stats(input3, arbitrate(input3)); // CC3
-  collect_stats(input4, arbitrate(input4)); // CC4
-  collect_stats(input5, arbitrate(input5)); // CC5
+  reset_state();
 
+  switch_input inputs[5] = {
+    {{{1,0,0},{1,0,0},{0,0,0},{1,1,2}}},
+    {{{1,1,0},{1,1,0},{1,0,1},{0,0,0}}},
+    {{{0,0,0},{0,0,0},{1,0,1},{0,0,0}}},
+    {{{0,0,0},{0,0,0},{1,0,1},{0,0,0}}},
+    {{{0,0,0},{0,0,0},{1,1,1},{0,0,0}}}
+  };
+
+  for (int cycle = 0; cycle < 5; cycle++) {
+    printf("\n========== Cycle %d ==========\n", cycle);
+
+    for (int ingress=0; ingress<4; ingress++){
+      axis_input pkt = inputs[cycle].ingress[ingress];
+      if(pkt.valid)
+        printf("Ingress %d: valid=1, last=%d, dest=%d\n", ingress, pkt.last, pkt.dest);
+    }
+
+    for (int egress = 0; egress < 4; egress++) {
+      switch_output out = arbitrate(inputs[cycle], egress, cycle);
+      collect_stats(inputs[cycle], out, egress, cycle);
+
+      printf("Cycle %d, Egress %d selects ingress %d | grants: [%d %d %d %d]\n",
+             cycle, egress, out.select, out.grant[0], out.grant[1], out.grant[2], out.grant[3]);
+    }
+  }
+
+  printf("\nFinal Waiting counts per ingress: [%d %d %d %d]\n", waiting[0], waiting[1], waiting[2], waiting[3]);
+  printf("Total errors detected: %d\n", errors);
+
+  return 0;
 }
