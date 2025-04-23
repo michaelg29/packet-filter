@@ -10,6 +10,8 @@ ifdef SYS_PORTION
 	INCLUDE_FLAG += -I../../$(SYS_PORTION)
 endif
 
+VLOG_DEFINES += +define+VERILATOR=1
+
 # create simulator object
 obj_dir/V$(DUT_TOP): $(SVFILES) $(DUT_TOP).cpp
 	verilator -trace -Wall -cc $(SVFILES) -exe $(DUT_TOP).cpp \

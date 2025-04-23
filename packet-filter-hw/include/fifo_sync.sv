@@ -12,6 +12,7 @@
  *   - W_EL: data width (1 - 20)
  *   - NUM_CYCLONE_5CSEMA5_BLOCKS: number of 1280-Byte-blocks (512x20-word-blocks)
  */
+`timescale 1 ps / 1 ps
 module fifo_sync #(
     parameter ADDR_WIDTH = 11,
     parameter W_EL = 20,

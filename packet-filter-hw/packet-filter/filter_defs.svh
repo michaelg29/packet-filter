@@ -24,4 +24,10 @@ typedef struct {
     logic       tuser;
 } dest_source_t;
 
+// Drop indication interface
+typedef struct {
+    logic       tvalid;
+    logic       tuser;
+} drop_source_t;
+
 `endif // _FILTER_DEFS_SVH
