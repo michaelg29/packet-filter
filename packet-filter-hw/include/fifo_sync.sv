@@ -191,12 +191,12 @@ module fifo_sync #(
     assertion_fifo_sync_full_until_read : assert property(
         @(posedge clk) disable iff (rrst || wrst)
         $rose(full) |=> full || $past(ren, 1)
-    ) else $error("fifo_sync", $sformatf("assertion_fifo_sync_full_until_read failed at %0t", $realtime));
+    ) else $error($sformatf("assertion_fifo_sync_full_until_read failed at %0t", $realtime));
 
     // assert FIFO displays empty until a write completes
     assertion_fifo_sync_empty_until_write : assert property(
         @(posedge clk) disable iff (rrst || wrst)
         $rose(empty) |=> empty || $past(wen, 1)
-    ) else $error("fifo_sync", $sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
+    ) else $error($sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
 
 endmodule

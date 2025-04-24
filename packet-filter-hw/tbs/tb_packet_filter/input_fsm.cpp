@@ -5,116 +5,119 @@
 
 #define CLK 20
 #define HFCLK 10
+#define RESET_HALF_CYCLES 5
+
+bool last_clock;
+Vinput_fsm *dut;
+VerilatedVcdC *tfp;
+int realtime;
+
+// realtime step
+void tick(int half_cycles, int tdata, int tvalid, int tlast, int drop_current, int almost_full) {
+  for (int i = 0; i < half_cycles; ++i, realtime += HFCLK) {
+    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+
+    if (!dut->clk && last_clock) {
+      // default stimulus
+      dut->ingress_source = {tdata, tvalid, tlast}; // data, valid, last
+      dut->drop_current = drop_current;
+      dut->almost_full = almost_full;
+    }
+
+    // tick
+    dut->eval();     // Run the simulation for a cycle
+    tfp->dump(realtime); // Write the VCD file for this cycle
+    if (dut->clk && !last_clock) {
+      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+    }
+    last_clock = dut->clk;
+
+    // reset values
+    tdata = 0;
+    tvalid = 0;
+    tlast = 0;
+    drop_current = 0;
+    almost_full = almost_full;
+  }
+}
+
+void reset() {
+  dut->reset = 1;
+  tick(RESET_HALF_CYCLES, 0, 0, 0, 0, 0);
+  dut->reset = 0;
+}
 
 int main(int argc, const char ** argv, const char ** env) {
   Verilated::commandArgs(argc, argv);
 
-  Vinput_fsm * dut = new Vinput_fsm;
+  dut = new Vinput_fsm;
 
   // Enable dumping a VCD file
 
   Verilated::traceEverOn(true);
-  VerilatedVcdC * tfp = new VerilatedVcdC;
+  tfp = new VerilatedVcdC;
   dut->trace(tfp, 99);
   tfp->open("input_fsm.vcd");
 
   // Initial values
   dut->reset = 1;
 
-  bool last_clock = true;
-  int time;
-  for (time = 0 ; time < 1040 ; time += HFCLK) {
-    dut->clk = ((time % CLK) < HFCLK) ? 1 : 0; // Simulate a 50 MHz clock
+  // simulation start
+  last_clock = true;
+  realtime = 0;
 
-    // stimulus on negative edge
-    std::cout << "clk is " << dut->clk << " prev is " << (last_clock ? '1' : '0') << std::endl;
-    if (!dut->clk && last_clock) {
-      // default stimulus
-      dut->reset = dut->reset;
-      dut->ingress_source = {0,0,0}; // data, valid, last
-      dut->drop_current = 0;
-      dut->almost_full = 0;
+  reset();
+  tick(8, 0, 0, 0, 0, 0);
 
-      // new stimulus
-      switch (time) {
-      case 50:
-        dut->reset = 0;
-        break;
+  // first frame: valid
+  tick(2, 0xAAAA, 1, 0, 0, 0);
+  tick(2, 0xAAAB, 1, 0, 0, 0);
+  for (int j = 0; j < 20; j++)
+    tick(2, j, 1, 0, 0, 0);
+  tick(2, 21, 1, 1, 0, 0);
+  tick(8, 0, 0, 0, 0, 0);
 
-// first frame: valid
-      case 90:
-        dut->ingress_source = {0xAAAA, 1, 0};
-        break;
+  // second frame: premature last
+  tick(2, 0xAAAB, 1, 0, 0, 0);
+  tick(2, 0xDEEF, 1, 1, 0, 0);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 110:
-        dut->ingress_source = {0xAAAB, 1, 0};
-        break;
+  // third frame: premature last
+  tick(2, 0xAAAB, 1, 1, 0, 0);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 130:
-        dut->ingress_source = {0xDEEF, 1, 0};
-        break;
+  // fourth frame: premature last
+  tick(2, 0xAAAA, 1, 1, 0, 0);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 150:
-        dut->ingress_source = {0xCAFE, 1, 0};
-        break;
+  // fifth frame: backpressure in middle of frame
+  tick(2, 0xAAAB, 1, 0, 0, 0);
+  for (int j = 0; j < 20; j++)
+    tick(2, j, 1, 0, 0, 1);
+  tick(2, 21, 1, 1, 0, 1);
+  tick(2, 0xAAAB, 1, 0, 0, 1);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 170:
-        dut->ingress_source = {0xBE31, 1, 0};
-        break;
+  // sixth frame: backpressure before frame
+  tick(2, 0xAAAA, 1, 0, 0, 1);
+  tick(2, 0xAAAB, 1, 0, 0, 1);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 190:
-        dut->ingress_source = {0x1234, 1, 0};
-        break;
+  // seventh frame: drop frame
+  tick(2, 0xAAAB, 1, 0, 0, 0);
+  tick(2, 1, 1, 0, 0, 0);
+  tick(2, 2, 1, 0, 0, 0);
+  tick(2, 3, 1, 0, 0, 0);
+  tick(2, 4, 1, 0, 1, 0);
+  tick(2, 5, 1, 0, 0, 0);
+  tick(2, 6, 1, 1, 0, 0);
+  tick(2, 0xAAAB, 1, 0, 0, 0);
+  for (int j = 0; j < 20; j++)
+    tick(2, j, 1, 0, 0, 1);
+  tick(2, 21, 1, 1, 0, 1);
+  tick(8, 0, 0, 0, 0, 0);
 
-      case 210:
-        dut->ingress_source = {0x5678, 1, 0};
-        break;
-
-      case 250:
-        dut->ingress_source = {0x9ABC, 1, 0};
-        break;
-
-      case 350:
-        dut->ingress_source = {0x9ABC, 1, 0};
-        break;
-
-      case 390:
-        dut->ingress_source = {0x9ABC, 1, 0};
-        break;
-
-      case 410:
-        dut->ingress_source = {0x9ABC, 1, 1};
-        break;
-
-// second frame: premature drop
-      case 490:
-        dut->ingress_source = {0xAAAB, 1, 0};
-        break;
-
-      case 510:
-        dut->ingress_source = {0xDEEF, 1, 1};
-        break;
-
-// third frame: premature drop
-      case 590:
-        dut->ingress_source = {0xAAAB, 1, 1};
-        break;
-
-// fourth frame: premature drop
-      case 650:
-        dut->ingress_source = {0xAAAB, 0, 1};
-        break;
-      }
-    }
-
-    // tick
-    dut->eval();     // Run the simulation for a cycle
-    tfp->dump(time); // Write the VCD file for this cycle
-    if (dut->clk && !last_clock) {
-      if (time >= 60) std::cout << time << ": " << std::endl; // Print the next value
-    }
-    last_clock = dut->clk;
-  }
+  tick(8, 0, 0, 0, 0, 0);
 
   std::cout << std::endl;
 

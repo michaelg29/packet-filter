@@ -43,18 +43,37 @@ module input_fsm #(
     localparam FRAME_STATUS_PAYLOAD = 5'b10001;
 
     // Status signals
+    logic       prev_ready;
     logic [4:0] frame_status_str;
 
-    // Save packet
-    always_ff @(posedge clk) begin: p_pkt
+    // Ingress interface
+    always_ff @(posedge clk) begin: p_ingress
         if (reset) begin
             ingress_pkt.tvalid <= 1'b0;
             ingress_pkt.tdata <= 16'b0;
             ingress_pkt.tlast <= 1'b0;
-            ingress_sink.tready <= 1'b0;
+            prev_ready <= 1'b0;
         end else begin
+            // save packet
             ingress_pkt <= ingress_source;
-            ingress_sink.tready <= ~almost_full;
+            prev_ready <= ingress_sink.tready;
+        end
+    end
+
+    // assert backpressure when not enough space for a full frame
+    //   and not done with the current frame if a frame is ingressing
+    always_comb begin
+        if (almost_full) begin
+            if (state_transition_en) begin
+                // hold ready until completed transaction
+                ingress_sink.tready = ~ingress_pkt.tlast;
+            end else begin
+                // if no handshake, turn off with backpressure
+                ingress_sink.tready = 1'b0;
+            end
+        end else begin
+            // turn on immediately
+            ingress_sink.tready = ingress_source.tvalid || prev_ready;
         end
     end
 
@@ -223,5 +242,21 @@ module input_fsm #(
         $display("state is %s\n", state_str);
     end
 `endif
+
+    /* Assertions */
+
+    // assert grant is held for an entire frame
+    assertion_input_fsm_frame_grant : assert property(
+        @(posedge clk) disable iff (reset)
+        ingress_source.tvalid & ingress_sink.tready & ~ingress_source.tlast
+            |=> ingress_sink.tready || ingress_source.tlast
+    ) else $error($sformatf("assertion_input_fsm_frame_grant failed at %0t", $realtime));
+
+    // do not provide grants if almost full
+    assertion_input_fsm_almost_full : assert property(
+        @(negedge clk) disable iff (reset)
+        almost_full && (~ingress_source.tvalid || ingress_source.tlast)
+            |=> ~ingress_sink.tready
+    ) else $error($sformatf("assertion_input_fsm_almost_full failed at %0t", $realtime));
 
 endmodule

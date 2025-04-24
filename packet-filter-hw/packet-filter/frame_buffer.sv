@@ -20,7 +20,8 @@ module frame_buffer #(
     input  logic         frame_rrst,
     input  logic [ADDR_WIDTH:0] frame_rst_rptr,
     output logic [ADDR_WIDTH:0] frame_rptr,
-    output logic [19:0]  frame_rdata
+    output logic [19:0]  frame_rdata,
+    output logic         last_entry
 );
 
     // ingress frame control
@@ -32,6 +33,9 @@ module frame_buffer #(
     logic frame_full;
     logic next_almost_full;
     logic [ADDR_WIDTH-1:0] frame_ptr_diff;
+
+    // egress frame control
+    logic next_last_entry;
 
     // Register logic
     always_ff @(posedge clk) begin
@@ -48,12 +52,14 @@ module frame_buffer #(
                 frame_rst_wptr <= frame_rst_wptr;
             end
 
-            // Almost full logic
+            // Almost full/empty logic
             almost_full <= next_almost_full;
+            last_entry  <= next_last_entry;
         end
     end
 
     // Almost-full logic
+    assign next_last_entry = ((frame_rptr + 1) == frame_wptr) ? 1'b1 : 1'b0;
     assign frame_ptr_diff = {frame_wptr - frame_rptr}[ADDR_WIDTH-1:0];
     always_comb begin
 `ifdef VERILATOR
