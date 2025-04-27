@@ -254,9 +254,26 @@ module input_fsm #(
 
     // do not provide grants if almost full
     assertion_input_fsm_almost_full : assert property(
-        @(negedge clk) disable iff (reset)
+        @(posedge clk) disable iff (reset)
         almost_full && (~ingress_source.tvalid || ingress_source.tlast)
             |=> ~ingress_sink.tready
     ) else $error($sformatf("assertion_input_fsm_almost_full failed at %0t", $realtime));
+
+    // assert do not accept packets when not ready
+    assertion_input_fsm_tready : assert property(
+        @(posedge clk) disable iff (reset)
+        ~ingress_sink.tready |=> frame_status_str === FRAME_STATUS_IDLE
+    ) else $error("Failed assertion");
+
+    // assert mask a dropped frame (do not broadcast frame status until tlast asserted)
+`ifdef VERILATOR
+    logic current_frame_dropped;
+    reg_set_clear r_current_frame_dropped
+        (clk, reset, drop_current, ingress_source.tlast, current_frame_dropped);
+    assertion_input_fsm_mask_dropped : assert property(
+        @(posedge clk) disable iff (reset)
+        current_frame_dropped |-> frame_status_str === FRAME_STATUS_IDLE || ingress_source.tlast
+    ) else $error("Failed assertion");
+`endif
 
 endmodule

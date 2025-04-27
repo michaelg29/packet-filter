@@ -199,4 +199,16 @@ module fifo_sync #(
         $rose(empty) |=> empty || $past(wen, 1)
     ) else $error($sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
 
+    // assert read reset and read enable not asserted at the same time
+    assertion_fifo_sync_read_reset_enable : assert property(
+        @(posedge clk) disable iff (reset)
+        ~(rrst & ren)
+    ) else $error("Read enable and read reset asserted in the same cycle");
+
+    // assert write reset and write enable not asserted at the same time
+    assertion_fifo_sync_write_reset_enable : assert property(
+        @(posedge clk) disable iff (reset)
+        ~(wrst & wen)
+    ) else $error("Write enable and write reset asserted in the same cycle");
+
 endmodule

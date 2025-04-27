@@ -115,7 +115,7 @@ int main(int argc, const char ** argv, const char ** env) {
   for (int j = 0; j < 20; j++)
     tick(2, j, 1, 0, 0, 1);
   tick(2, 21, 1, 1, 0, 1);
-  tick(8, 0, 0, 0, 0, 0);
+  tick(8, 0, 0, 0, 0, 1);
 
   tick(8, 0, 0, 0, 0, 0);
 

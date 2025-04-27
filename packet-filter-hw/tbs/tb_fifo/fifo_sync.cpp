@@ -35,17 +35,19 @@ int main(int argc, const char ** argv, const char ** env) {
       dut->ren = 0;
       dut->wen = 0;
       dut->wdata = 0;
+      dut->rrst = 0;
       dut->rst_rptr = 0;
+      dut->wrst = 0;
       dut->rst_wptr = 0;
 
       // new stimulus
       switch (time) {
       case 50:
         dut->reset = 0;
+        dut->wen = 1;
+        dut->wdata = 1;
         break;
       case 70:
-        dut->wen = 1;
-        dut->wdata = 15;
         break;
       case 90:
         dut->ren = 1;
@@ -81,6 +83,25 @@ int main(int argc, const char ** argv, const char ** env) {
         dut->wdata = 4;
         break;
       case 290:
+        dut->ren = 1;
+        dut->wen = 1;
+        dut->wdata = 5;
+        break;
+      case 310:
+        dut->wen = 1;
+        dut->wdata = 6;
+        break;
+      case 330:
+        dut->wen = 1;
+        dut->wdata = 7;
+        break;
+
+      case 390:
+        dut->rrst = 1;
+        dut->rst_rptr = dut->wptr - 2;
+        break;
+
+      case 410:
         dut->ren = 1;
         break;
       };
