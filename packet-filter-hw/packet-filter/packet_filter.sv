@@ -7,7 +7,11 @@
  *        0RW  |  ingress_port_mask |  Enable signal for input ports (active-high).
  */
 
+`ifdef VERILATOR
 `include "packet_filter.svh"
+`else
+`include "../include/packet_filter.svh"
+`endif
 `include "filter_defs.svh"
 
 `timescale 1 ps / 1 ps
@@ -137,7 +141,9 @@ end else begin: g_functional
 	assign egress_port_3_tdata   = egress_port_source[3].tdata;
 	assign egress_port_3_tlast   = egress_port_source[3].tlast;
 
-	ingress_filter u_filter[`NUM_INGRESS_PORTS-1:0] (
+	ingress_filter #(
+            .STUBBING(STUBBING)
+        ) u_filter[`NUM_INGRESS_PORTS-1:0] (
 	    .clk  (clk),
 	    .reset(reset),
 

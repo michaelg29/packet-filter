@@ -161,14 +161,6 @@
          type = "int";
       }
    }
-   element packet_filter_0.avalon_slave_0
-   {
-      datum baseAddress
-      {
-         value = "0";
-         type = "String";
-      }
-   }
    element packet_switch_0
    {
       datum _sortIndex
@@ -182,6 +174,22 @@
       datum baseAddress
       {
          value = "4096";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
          type = "String";
       }
    }
@@ -343,7 +351,7 @@
  <parameter name="hideFromIPCatalog" value="false" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="soc_system.qpf" />
+ <parameter name="projectName" value="" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -364,42 +372,58 @@
    name="frame_generator_0"
    kind="frame_generator"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_generator_1"
    kind="frame_generator"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_generator_2"
    kind="frame_generator"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_generator_3"
    kind="frame_generator"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_receptor_0"
    kind="frame_receptor"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_receptor_1"
    kind="frame_receptor"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_receptor_2"
    kind="frame_receptor"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module
    name="frame_receptor_3"
    kind="frame_receptor"
    version="1.0"
-   enabled="1" />
+   enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <module name="hps_0" kind="altera_hps" version="21.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />
   <parameter name="ABS_RAM_MEM_INIT_FILENAME" value="meminit" />
@@ -930,8 +954,12 @@
   <parameter name="usb_mp_clk_div" value="0" />
   <parameter name="use_default_mpu_clk" value="true" />
  </module>
- <module name="packet_filter_0" kind="packet_filter" version="1.0" enabled="1" />
- <module name="packet_switch_0" kind="packet_switch" version="1.0" enabled="1" />
+ <module name="packet_filter_0" kind="packet_filter" version="1.0" enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
+ <module name="packet_switch_0" kind="packet_switch" version="1.0" enabled="1">
+  <parameter name="STUBBING" value="0" />
+ </module>
  <connection
    kind="avalon"
    version="21.1"

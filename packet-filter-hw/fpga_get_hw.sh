@@ -10,6 +10,6 @@ if [ -z "$hw_dir" ]; then
 	hw_dir="packet-filter-hw"
 fi
 
-scp $ssh_machine:~/src/packet-filter/$hw_dir/\{output_files/soc_system.rbf,soc_system.dtb\} /mnt
+scp $ssh_machine:$hw_dir/\{output_files/soc_system.rbf,soc_system.dtb\} /mnt
 sync
 

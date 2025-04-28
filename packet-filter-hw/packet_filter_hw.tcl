@@ -40,14 +40,10 @@ set_fileset_property QUARTUS_SYNTH TOP_LEVEL packet_filter
 set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE true
 add_fileset_file packet_filter.sv SYSTEM_VERILOG PATH packet-filter/packet_filter.sv TOP_LEVEL_FILE
-add_fileset_file packet_filter.svh OTHER PATH packet-filter/packet_filter.svh
+add_fileset_file packet_filter.svh OTHER PATH include/packet_filter.svh
 add_fileset_file fifo_sync.sv SYSTEM_VERILOG PATH include/fifo_sync.sv
-add_fileset_file dest_calculator.sv SYSTEM_VERILOG PATH packet-filter/dest_calculator.sv
-add_fileset_file frame_buffer.sv SYSTEM_VERILOG PATH packet-filter/frame_buffer.sv
 add_fileset_file ingress_filter.sv SYSTEM_VERILOG PATH packet-filter/ingress_filter.sv
-add_fileset_file input_fsm.sv SYSTEM_VERILOG PATH packet-filter/input_fsm.sv
-add_fileset_file sideband_buffer.sv SYSTEM_VERILOG PATH packet-filter/sideband_buffer.sv
-add_fileset_file switch_requester.sv SYSTEM_VERILOG PATH packet-filter/switch_requester.sv
+add_fileset_file filter_defs.svh OTHER PATH packet-filter/filter_defs.svh
 
 
 # 

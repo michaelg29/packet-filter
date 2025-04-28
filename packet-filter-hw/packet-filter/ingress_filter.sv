@@ -1,9 +1,15 @@
 
+`ifdef VERILATOR
 `include "packet_filter.svh"
+`else
+`include "../include/packet_filter.svh"
+`endif
 `include "filter_defs.svh"
 
 `timescale 1 ps / 1 ps
-module ingress_filter (
+module ingress_filter #(
+        parameter STUBBING = `STUBBING_PASSTHROUGH
+    ) (
 		input  logic       clk,
 		input  logic       reset,
 
@@ -27,13 +33,14 @@ module ingress_filter (
      */
     always_ff @(posedge clk) begin
         if (reset) begin
-            ingress_source_q.tvalid <= 1'b0;
-            ingress_source_q.tdata <= 16'b0;
-            ingress_source_q.tlast <= 1'b0;
-            egress_sink_q.tready <= 1'b0;
+            egress_source.tvalid <= 1'b0;
+            egress_source.tdata <= 16'b0;
+            egress_source.tdest <= 2'b0;
+            egress_source.tlast <= 1'b0;
+            ingress_sink.tready <= 1'b0;
         end else begin
-            ingress_source_q <= ingress_source;
-            egress_sink_q    <= egress_sink;
+            egress_source <= ingress_source;
+            ingress_sink  <= ingress_sink;
         end
     end
 

@@ -73,6 +73,8 @@ $(QPF) $(QSF) $(SDC) : $(TCL) $(HPS_PIN_TCL)
 
 .PHONY : qsys
 qsys : $(SOPCINFO)
+	mkdir -p soc_system/synthesis/include
+	cp include/*.svh soc_system/synthesis/include
 
 $(SOPCINFO) $(QIP) $(HPS_PIN_TCL) $(SYSTEM)/ $(PRELOADER_SETTINGS_DIR) : $(QSYS)
 	rm -rf $(SOPCINFO) $(SYSTEM)/
