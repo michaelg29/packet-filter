@@ -22,6 +22,13 @@ void tick(int half_cycles, int tdata, int tvalid, int tlast, int drop_current, i
       dut->ingress_source = {tdata, tvalid, tlast}; // data, valid, last
       dut->drop_current = drop_current;
       dut->almost_full = almost_full;
+
+      // reset values
+      tdata = 0;
+      tvalid = 0;
+      tlast = 0;
+      drop_current = 0;
+      almost_full = almost_full;
     }
 
     // tick
@@ -31,13 +38,6 @@ void tick(int half_cycles, int tdata, int tvalid, int tlast, int drop_current, i
       if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
     }
     last_clock = dut->clk;
-
-    // reset values
-    tdata = 0;
-    tvalid = 0;
-    tlast = 0;
-    drop_current = 0;
-    almost_full = almost_full;
   }
 }
 

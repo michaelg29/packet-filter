@@ -1,4 +1,7 @@
 
+`include "packet_filter.svh"
+`include "filter_defs.svh"
+
 `timescale 1 ps / 1 ps
 module input_fsm #(
 

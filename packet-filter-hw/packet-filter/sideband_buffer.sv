@@ -1,4 +1,7 @@
 
+`include "packet_filter.svh"
+`include "filter_defs.svh"
+
 `timescale 1 ps / 1 ps
 module sideband_buffer #(
 
@@ -8,10 +11,15 @@ module sideband_buffer #(
 
 );
 
+    // TODO do not enqueue until scan_payload and not drop (only enqueue when completely valid)
+
+    // TODO reset to idle when drop packet signal received
+
     /*
      * Sideband FIFO.
      *
      * Using 1 block
+     * Can store 512 words (more than the maximum number of frames in the frame buffer)
      */
     /*fifo_sync #(
         .ADDR_WIDTH(9),

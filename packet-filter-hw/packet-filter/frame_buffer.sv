@@ -1,4 +1,7 @@
 
+`include "packet_filter.svh"
+`include "filter_defs.svh"
+
 `timescale 1 ps / 1 ps
 module frame_buffer #(
     parameter ALMOST_FULL_THRESHOLD = 10,
@@ -78,7 +81,8 @@ module frame_buffer #(
      *
      * Using 4 blocks = 512*4 = 2048x20b words
      * Must address 2048 words => 11-bit address (12-bit cursor)
-     * Can store 2.69829 full-sized frames (1518 Bytes = 759 half-words each)
+     * Can store 2.69829 full-sized frames (1518 Bytes = 759 queue words each)
+     * Can store 64 min-sized frames (64 Bytes = 32 queue words each)
      *
      * TODO: add parity bits to pad 16-bit streaming words to 20-bit memory words
      */
