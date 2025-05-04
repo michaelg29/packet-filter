@@ -48,6 +48,7 @@ module switch_requester #(
     logic                       first_req;
 
     // frame buffer control
+    logic                next_frame_ren;
     logic [ADDR_WIDTH:0] next_frame_rptr;
     logic                prev_frame_ren;
     logic                first_frame_rrst;
@@ -55,32 +56,27 @@ module switch_requester #(
 
     // sideband buffer control
     logic first_sideband_ren;
-    logic prev_sideband_ren;
 
     // egress control
-    logic [`AXIS_DEST_WIDTH-1:0] tdest;
-    logic                        tlast;
-    logic                        egress_handshake_complete;
-    logic                        prev_egress_request;
+    logic first_last;
+    logic tlast;
+    logic egress_handshake_complete;
+    logic prev_egress_request;
 
     /* Save input data. */
 
     // latch sideband data
     always_ff @(posedge clk) begin
         if (reset) begin
-            prev_egress_request <= 1'b0;
-            prev_sideband_ren <= 1'b0;
             frame_rst_rptr <= '0;
-            tdest <= '0;
+            egress_source.tdest <= '0;
         end else begin
-            prev_egress_request <= egress_source.tvalid & ~egress_sink.tready;
-            prev_sideband_ren <= sideband_ren;
-            if (prev_sideband_ren) begin
-                frame_rst_rptr <= sideband_rdata[ADDR_WIDTH+`AXIS_DEST_WIDTH:`AXIS_DEST_WIDTH];
-                tdest <= sideband_rdata[`AXIS_DEST_WIDTH-1:0];
+            if (first_sideband_ren) begin
+                frame_rst_rptr <= next_frame_rptr;
+                egress_source.tdest <= sideband_rdata[`AXIS_DEST_WIDTH-1:0];
             end else begin
                 frame_rst_rptr <= frame_rst_rptr;
-                tdest <= tdest;
+                egress_source.tdest <= egress_source.tdest;
             end
         end
     end
@@ -111,10 +107,11 @@ module switch_requester #(
     /* Generate next state. */
 
     // egress handshake completion
+    assign prev_egress_request = ~egress_sink.tready & egress_source.tvalid;
     assign egress_handshake_complete = egress_sink.tready & egress_source.tvalid;
 
     // find the boundary for the next frame
-    assign next_frame_rptr = sideband_rdata[ADDR_WIDTH+2:2];
+    assign next_frame_rptr = sideband_rdata[ADDR_WIDTH+`AXIS_DEST_WIDTH:`AXIS_DEST_WIDTH];
     assign next_rptr_is_last = ((frame_rptr + 1) === next_frame_rptr) ? 1'b1 : 1'b0;
 
     // next state (and state transition indicator) logic
@@ -123,6 +120,7 @@ module switch_requester #(
         first_sideband_ren = 1'b0;
         first_frame_rrst = 1'b0;
         first_req = 1'b0;
+        first_last = 1'b0;
         case (state)
         IDLE: begin
             // start making requests when frames exist in the sideband
@@ -157,11 +155,18 @@ module switch_requester #(
             // assert last when one more entry in the current frame
             if ((sideband_empty & frame_last_entry) | next_rptr_is_last) begin
                 next_state = LAST_PACKET;
+                first_last = 1'b1;
+            end else if (timeout_ctr[TIMEOUT_CTR_WIDTH]) begin
+                // timeout request when counter overflows
+                next_state = IDLE;
             end
         end
         LAST_PACKET: begin
             // transition to IDLE after last handshake
             if (egress_handshake_complete) begin
+                next_state = IDLE;
+            end else if (timeout_ctr[TIMEOUT_CTR_WIDTH]) begin
+                // timeout request when counter overflows
                 next_state = IDLE;
             end
         end
@@ -176,12 +181,10 @@ module switch_requester #(
     // control frame read enable
     always_comb begin
         // read frame buffer with initial request and every completed transaction
-        if (first_req) begin
-            frame_ren = 1'b1;
-        end else if (egress_handshake_complete & ~next_rptr_is_last) begin
-            frame_ren = 1'b1;
+        if (first_req || (egress_handshake_complete & (state !== LAST_PACKET))) begin
+            next_frame_ren = 1'b1;
         end else begin
-            frame_ren = 1'b0;
+            next_frame_ren = 1'b0;
         end
     end
 
@@ -205,29 +208,30 @@ module switch_requester #(
     end
 
     // output generation
-    assign sideband_ren = first_sideband_ren;
-    assign egress_source.tlast = (state === LAST_PACKET) ? 1'b1 : 1'b0;
-    assign egress_source.tdata = frame_rdata;
-    assign egress_source.tvalid = (prev_frame_ren || prev_egress_request) && ~timeout_ctr[TIMEOUT_CTR_WIDTH];
-    assign egress_source.tdest = tdest;
-    /*always_comb begin
-        case (state)
-        IDLE: begin
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            frame_ren <= 1'b0;
+            sideband_ren <= 1'b0;
+            egress_source.tdata <= '0;
+            egress_source.tlast <= 1'b0;
+        end else begin
+            frame_ren <= next_frame_ren;
+            sideband_ren <= first_sideband_ren;
+
+            // latch read data
+            if (next_frame_ren) begin
+                egress_source.tdata <= frame_rdata;
+            end else begin
+                egress_source.tdata <= egress_source.tdata;
+            end
+
+            // assert tlast when going to or staying in LAST_PACKET state
+            egress_source.tlast <= (next_state === LAST_PACKET) ? 1'b1 : 1'b0;
+
+            // valid when read from FIFO or previous request not granted
+            egress_source.tvalid <= (first_req || next_frame_ren || prev_egress_request) && ~timeout_ctr[TIMEOUT_CTR_WIDTH];
         end
-        READ_SIDEBAND: begin
-        end
-        INIT_FRAME_PTR: begin
-        end
-        INIT_REQ: begin
-        end
-        WRITE_FRAME: begin
-        end
-        LAST_PACKET: begin
-        end
-        default: begin
-        end
-        endcase
-    end*/
+    end
 
     /* Assertions. */
 
@@ -261,6 +265,12 @@ module switch_requester #(
         ~scan_payload && sideband_empty |-> ~frame_ren
     ) else $error("Failed assertion");
 
+    // assert do not read from an empty FIFO (will fail if empty transitions high in middle of cycle as in the testbench)
+    //assertion_switch_requester_empty_read : assert property(
+    //    @(posedge clk) disable iff (reset)
+    //    sideband_empty |-> ~sideband_ren
+    //) else $error("Failed assertion");
+
     // assert state transition signals are pulsed
     assertion_switch_requester_pulse_first_sideband_ren : assert property(
         @(posedge clk) disable iff (reset)
@@ -273,6 +283,10 @@ module switch_requester #(
     assertion_switch_requester_pulse_first_req : assert property(
         @(posedge clk) disable iff (reset)
         first_req |=> ~first_req
+    ) else $error("Failed assertion");
+    assertion_switch_requester_pulse_first_last : assert property(
+        @(posedge clk) disable iff (reset)
+        first_last |=> ~first_last
     ) else $error("Failed assertion");
 
 endmodule

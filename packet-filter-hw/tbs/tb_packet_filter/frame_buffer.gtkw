@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
-[*] Wed Apr 23 12:57:32 2025
+[*] Tue Apr 29 01:39:18 2025
 [*]
 [dumpfile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/frame_buffer.vcd"
-[dumpfile_mtime] "Wed Apr 23 12:55:42 2025"
-[dumpfile_size] 4488
+[dumpfile_mtime] "Tue Apr 29 01:25:59 2025"
+[dumpfile_size] 7946
 [savefile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/frame_buffer.gtkw"
-[timestart] 80
-[size] 996 600
+[timestart] 348
+[size] 1031 638
 [pos] -1 -1
-*-6.250672 99 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.851869 590 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.frame_buffer.
 [sst_width] 193
 [signals_width] 193
 [sst_expanded] 1
-[sst_vpaned_height] 167
+[sst_vpaned_height] 194
 @28
 TOP.frame_buffer.clk
 TOP.frame_buffer.reset
@@ -27,9 +27,12 @@ TOP.frame_buffer.ingress_pkt.tlast
 TOP.frame_buffer.scan_frame
 TOP.frame_buffer.prev_scan_frame
 TOP.frame_buffer.frame_wen
+@29
 TOP.frame_buffer.drop_write
+@28
 TOP.frame_buffer.frame_rst_wptr[2:0]
 TOP.frame_buffer.frame_wptr[2:0]
+TOP.frame_buffer.frame_ptr_diff[1:0]
 TOP.frame_buffer.almost_full
 TOP.frame_buffer.frame_full
 TOP.frame_buffer.frame_ptr_diff[1:0]
@@ -39,5 +42,12 @@ TOP.frame_buffer.frame_rst_rptr[2:0]
 TOP.frame_buffer.frame_rptr[2:0]
 @22
 TOP.frame_buffer.frame_rdata[19:0]
+@28
+TOP.frame_buffer.next_last_entry
+TOP.frame_buffer.last_entry
+@24
+TOP.frame_buffer.rcnt[31:0]
+TOP.frame_buffer.wcnt[31:0]
+TOP.frame_buffer.size[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

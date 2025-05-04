@@ -6,6 +6,7 @@
 `endif
 `include "filter_defs.svh"
 
+// Integrate preliminary_processor and request_buffer
 `timescale 1 ps / 1 ps
 module ingress_filter #(
         parameter STUBBING = `STUBBING_PASSTHROUGH

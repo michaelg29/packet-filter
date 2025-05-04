@@ -28,7 +28,7 @@ void print_ingress_mask() {
       perror("ioctl(PACKET_FILTER_READ_INGRESS_PORT_MASK) failed");
       return;
   }
-  printf("%04b\n",
+  printf("%0x\n",
 	 (unsigned int)vla.ingress_port_mask.mask);
 }
 
@@ -57,7 +57,8 @@ int main()
   printf("initial state: ");
   print_ingress_mask();
 
-  // XXX
+  set_ingress_mask(0xf);
+  print_ingress_mask();
 
   printf("Userspace program terminating\n");
   return 0;

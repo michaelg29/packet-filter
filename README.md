@@ -33,9 +33,8 @@ tar Pzxf linux-headers-4.19.0.tar.gz
 ls /usr/src/linux-headers-4.19.0
 
 # repository
-mkdir -p src
-cd src
 git clone https://github.com/michaelg29/packet-filter
+cd packet-filter
 ```
 
 Generate files on the workstation:
@@ -49,9 +48,8 @@ exit # embedded_command_shell.sh
 On FPGA, copy files:
 ```
 mount /dev/mmcblk0p1 /mnt
-scp mag2346@microXX.ee.columbia.edu:~/src/embedded-systems/embedded-systems/lab3/lab3-hw/output_files/soc_system.rbf /mnt
-scp mag2346@microXX.ee.columbia.edu:~/src/embedded-systems/embedded-systems/lab3/lab3-hw/soc_system.dtb /mnt
-sync
+cd packet-filter-hw
+bash fpga_get_hw.sh <USER@MACHINE> <REMOTE_PATH_TO_packet-filter-hw>
 reboot # then login
 ```
 

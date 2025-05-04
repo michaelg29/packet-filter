@@ -32,6 +32,7 @@ module frame_buffer #(
     logic frame_wen;
     logic [ADDR_WIDTH:0] frame_rst_wptr;
     logic [ADDR_WIDTH:0] frame_wptr;
+    logic [ADDR_WIDTH:0] next_frame_rptr;
     logic [19:0] frame_wdata;
     logic frame_full;
     logic next_almost_full;
@@ -55,14 +56,15 @@ module frame_buffer #(
                 frame_rst_wptr <= frame_rst_wptr;
             end
 
-            // Almost full/empty logic
+            // Capacity logic
             almost_full <= next_almost_full;
             last_entry  <= next_last_entry;
         end
     end
 
-    // Almost-full logic
-    assign next_last_entry = ((frame_rptr + 1) == frame_wptr) ? 1'b1 : 1'b0;
+    // Capacity logic
+    assign next_frame_rptr = frame_rptr + 1;
+    assign next_last_entry = (next_frame_rptr === frame_wptr) ? 1'b1 : 1'b0;
     assign frame_ptr_diff = {frame_wptr - frame_rptr}[ADDR_WIDTH-1:0];
     always_comb begin
 `ifdef VERILATOR
@@ -111,5 +113,58 @@ module frame_buffer #(
         .rptr     (frame_rptr),     // to switch FSM
         .wptr     (frame_wptr)      // to switch FSM
     );
+
+`ifdef VERILATOR
+    integer fifo_rst_rptr, fifo_rst_wptr, fifo_rptr, fifo_wptr;
+    integer wcnt, rcnt, size;
+
+    assign fifo_rst_rptr = {{(32-ADDR_WIDTH-1){1'b0}}, u_frame_fifo.rst_rptr};
+    assign fifo_rst_wptr = {{(32-ADDR_WIDTH-1){1'b0}}, u_frame_fifo.rst_wptr};
+    assign fifo_rptr = {{(32-ADDR_WIDTH-1){1'b0}}, u_frame_fifo.rptr};
+    assign fifo_wptr = {{(32-ADDR_WIDTH-1){1'b0}}, u_frame_fifo.wptr};
+    assign size = wcnt - rcnt;
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            rcnt <= 0;
+            wcnt <= 0;
+        end else begin
+            if (u_frame_fifo.rrst && u_frame_fifo.wrst) begin
+                rcnt <= 0;
+                wcnt <= fifo_rst_wptr - fifo_rst_rptr;
+            end else if (u_frame_fifo.rrst && ~u_frame_fifo.wrst) begin
+                rcnt <= 0;
+                if (u_frame_fifo.wen && ~u_frame_fifo.full) begin
+                    wcnt <= fifo_wptr - fifo_rst_rptr + 1;
+                end else begin
+                    wcnt <= fifo_wptr - fifo_rst_rptr;
+                end
+            end else if (~u_frame_fifo.rrst && u_frame_fifo.wrst) begin
+                if (u_frame_fifo.ren && ~u_frame_fifo.empty) begin
+                    rcnt <= 1;
+                end else begin
+                    rcnt <= 0;
+                end
+                wcnt <= fifo_rst_wptr - fifo_rptr;
+            end else begin
+                if (u_frame_fifo.wen && ~u_frame_fifo.full) begin
+                    wcnt <= wcnt + 1;
+                end
+                if (u_frame_fifo.ren && ~u_frame_fifo.empty) begin
+                    rcnt <= rcnt + 1;
+                end
+            end
+        end
+    end
+
+    assertion_frame_buffer_almost_full : assert property(
+        @(posedge clk) disable iff (reset)
+        (size >= ALMOST_FULL_THRESHOLD) |=> almost_full
+    ) else $error("Failed assertion");
+
+    assertion_frame_buffer_last_entry : assert property(
+        @(posedge clk) disable iff (reset)
+        (size === 1) |=> last_entry
+    ) else $error("Failed assertion");
+`endif
 
 endmodule

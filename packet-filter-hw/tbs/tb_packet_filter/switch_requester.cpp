@@ -24,9 +24,10 @@ int encode_sideband_entry(sideband_entry e) {
 
 int frame_ren_cnt = 0;
 int sideband_ren_cnt = 0;
-sideband_entry sideband_rdata_arr[NUM_FRAMES] = {{2, 1}, {8, 2}, {17, 3}};
+int frame_rptr;
+sideband_entry sideband_rdata_arr[NUM_FRAMES] = {{2, 1}, {19, 2}, {33, 3}};
 
-void tick(int half_cycles, int scan_payload, int sideband_empty, int frame_last_entry, int frame_rptr, int egress_tready) {
+void tick(int half_cycles, int scan_payload, int sideband_empty, int frame_last_entry, int egress_tready) {
   for (int i = 0; i < half_cycles; ++i, realtime += HFCLK) {
     dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
@@ -44,20 +45,28 @@ void tick(int half_cycles, int scan_payload, int sideband_empty, int frame_last_
       scan_payload = scan_payload;
       sideband_empty = sideband_empty;
       frame_last_entry = frame_last_entry & ~dut->frame_ren;
-      frame_rptr = frame_rptr;
       egress_tready = egress_tready;
     }
 
     // tick
-    dut->eval();     // Run the simulation for a cycle
-    tfp->dump(realtime); // Write the VCD file for this cycle
+    dut->eval();     // Run the simulation for a half cycle
+    tfp->dump(realtime); // Write the VCD file for this half cycle
     if (dut->clk && !last_clock) {
-      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+      if (realtime >= 60) {
+        std::cout << realtime << ": " << sideband_ren_cnt << ", " << frame_ren_cnt << " + " << sideband_rdata_arr[sideband_ren_cnt % NUM_FRAMES].frame_rptr << std::endl; // Print the next value
+        if (dut->sideband_ren) {
+          std::cout << "    sideband_ren asserted" << std::endl;
+        }
+      }
 
       // FIFO response on next rising edge
       if (!dut->reset) {
-        frame_ren_cnt = frame_ren_cnt + (dut->frame_ren ? 1 : 0);
+        frame_ren_cnt = dut->frame_rrst ? 0 : frame_ren_cnt + (dut->frame_ren ? 1 : 0);
+        frame_rptr = dut->frame_rrst ? dut->frame_rst_rptr : frame_rptr + (dut->frame_ren ? 1 : 0);
         sideband_ren_cnt = sideband_ren_cnt + (dut->sideband_ren ? 1 : 0);
+      }
+      if (dut->frame_rrst) {
+        std::cout << "    rrst asserted, set rptr to " << frame_rptr << std::endl;
       }
     }
     last_clock = dut->clk;
@@ -66,7 +75,7 @@ void tick(int half_cycles, int scan_payload, int sideband_empty, int frame_last_
 
 void reset() {
   dut->reset = 1;
-  tick(RESET_HALF_CYCLES, 0, 0, 0, 0, 0);
+  tick(RESET_HALF_CYCLES, 0, 0, 0, 0);
   dut->reset = 0;
 }
 
@@ -95,28 +104,41 @@ int main(int argc, const char ** argv, const char ** env) {
   // args: scan_payload, sideband_rdata, sideband_empty, frame_rdata, frame_last_entry, frame_rptr, egress_tready
 
   // idle state
-  tick(8, 0, 1, 0, 0, 0);
+  tick(8, 0, 1, 0, 0);
 
   // write frame without asserting scan_payload
-  tick(2, 0, 0, 0, 0, 0);
-  tick(2, 0, 1, 0, 0, 0);
-  tick(2, 0, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 1);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 1, 1, 0, 0, 0);
-  tick(2, 0, 1, 0, 0, 0);
+  tick(2, 0, 0, 0, 0);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 0, 1, 0, 1);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 0, 1, 0, 0);
+  tick(2, 1, 1, 0, 0);
+  tick(2, 1, 1, 0, 0);
+  tick(2, 1, 1, 0, 1);
+  tick(2, 1, 1, 0, 1);
+  tick(2, 1, 1, 0, 1);
+  tick(2, 1, 1, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 1, 0, 0, 1);
+  tick(2, 0, 0, 0, 1);
+  tick(2, 0, 0, 0, 1);
+  tick(2, 0, 0, 0, 1);
+  tick(2, 0, 0, 0, 1);
+  tick(2, 0, 0, 0, 1);
 
   // end of testcase
-  tick(32, 0, 1, 0, 0, 0);
+  tick(32, 0, 1, 0, 1);
+  tick(32, 0, 1, 0, 1);
 
   std::cout << std::endl;
 
