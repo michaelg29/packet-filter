@@ -19,7 +19,7 @@ obj_dir/V$(DUT_TOP): $(SVFILES) $(DUT_TOP).cpp
 		$(VLOG_GENERICS) \
 		$(INCLUDE_FLAG) \
 		-top-module $(DUT_TOP) \
-		-Wno-DECLFILENAME -Wno-UNUSEDSIGNAL -Wno-MISINDENT \
+		-Wno-DECLFILENAME\
 		-assert
 	cd obj_dir && make -j -f V$(DUT_TOP).mk
 
