@@ -7,7 +7,9 @@
 `include "filter_defs.svh"
 
 `timescale 1 ps / 1 ps
-module dest_calculator (
+module dest_calculator #(
+    parameter STUBBING = `STUBBING_PASSTHROUGH
+) (
     input  logic clk,
     input  logic reset,
 

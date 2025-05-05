@@ -27,11 +27,15 @@
  *       20R   |         Checksum | Payload checksum byte 3.
  */
 
+`ifdef VERILATOR
+`include "packet_filter.svh"
+`else
 `include "../include/packet_filter.svh"
+`endif
 
 `timescale 1 ps / 1 ps
 module frame_generator #(
-       // parameter STUBBING = `STUBBING_PASSTHROUGH      
+       parameter STUBBING = `STUBBING_PASSTHROUGH
     ) (
 		input  wire        clk,                //          clock.clk
 		input  wire        reset,              //          reset.reset
@@ -80,7 +84,7 @@ module frame_generator #(
                 reg_file[address] <= writedata;
             end
             else if(address > 16 && address < (16 + {reg_file[13], reg_file[12]})) begin
-                if(address % 2)
+                if(address[0])
                     payload_byte[7:0] <= writedata;
                 else
                     payload_byte[15:8] <= writedata;
@@ -113,7 +117,7 @@ module frame_generator #(
             sending <= 0;
             byte_counter <= 0;
             wait_counter <= 0;
-        end 
+        end
         else begin
             if(!sending && wait_counter == 0) begin
                 sending <= 1;

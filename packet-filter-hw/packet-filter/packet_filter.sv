@@ -16,7 +16,11 @@
 
 `timescale 1 ps / 1 ps
 module packet_filter #(
-        parameter STUBBING = `STUBBING_PASSTHROUGH
+        parameter STUBBING = `STUBBING_PASSTHROUGH,
+        parameter ALMOST_FULL_THRESHOLD = 10,
+        parameter ADDR_WIDTH = 11,
+        parameter NUM_CYCLONE_5CSEMA5_BLOCKS = 4,
+        parameter TIMEOUT_CTR_WIDTH = 3
     ) (
 		input  wire        clk,                   //                   clock.clk
 		input  wire        reset,                 //                   reset.reset
@@ -142,7 +146,11 @@ end else begin: g_functional
 	assign egress_port_3_tlast   = egress_port_source[3].tlast;
 
 	ingress_filter #(
-            .STUBBING(STUBBING)
+            .STUBBING(STUBBING),
+            .ALMOST_FULL_THRESHOLD(ALMOST_FULL_THRESHOLD),
+            .ADDR_WIDTH(ADDR_WIDTH),
+            .NUM_CYCLONE_5CSEMA5_BLOCKS(NUM_CYCLONE_5CSEMA5_BLOCKS),
+            .TIMEOUT_CTR_WIDTH(TIMEOUT_CTR_WIDTH)
         ) u_filter[`NUM_INGRESS_PORTS-1:0] (
 	    .clk  (clk),
 	    .reset(reset),

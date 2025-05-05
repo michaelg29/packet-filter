@@ -1,9 +1,14 @@
 
+`ifdef VERILATOR
 `include "packet_filter.svh"
+`else
+`include "../include/packet_filter.svh"
+`endif
 `include "filter_defs.svh"
 
 `timescale 1 ps / 1 ps
 module sideband_buffer #(
+    parameter STUBBING = `STUBBING_PASSTHROUGH,
     parameter ADDR_WIDTH = 11
 ) (
     input  logic clk,

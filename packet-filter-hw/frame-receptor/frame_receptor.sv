@@ -11,11 +11,15 @@
  *        4R   |         Checksum | Payload checksum byte 3.
  */
 
+`ifdef VERILATOR
+`include "packet_filter.svh"
+`else
 `include "../include/packet_filter.svh"
+`endif
 
 `timescale 1 ps / 1 ps
 module frame_receptor #(
-       // parameter STUBBING = `STUBBING_PASSTHROUGH
+       parameter STUBBING = `STUBBING_PASSTHROUGH
     ) (
 		input  wire        clk,                 //          clock.clk
 		input  wire        reset,               //          reset.reset
@@ -45,7 +49,7 @@ module frame_receptor #(
 
 // end
 // endgenerate
-    assign ingress_port_tready = ingress_port_tlast ? 1 : 0;
+    assign ingress_port_tready = 1'b1;
     // register write interface
     always_ff @(posedge clk) begin
         if (reset) begin
