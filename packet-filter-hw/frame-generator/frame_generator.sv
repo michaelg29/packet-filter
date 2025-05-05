@@ -95,27 +95,26 @@ module frame_generator #(
             if(address <= 16)
                 readdata <= reg_file[address];
             else if (address >= 17 && address <= 20)
-                case (address & 4)
-                    0 : readdata <= checksum[31:24];
-                    1 : readdata <= checksum[7:0];
-                    2 : readdata <= checksum[15:8];
-                    3 : readdata <= checksum[23:16];
+                case (address)
+                    17 : readdata <= checksum[7:0];
+                    18 : readdata <= checksum[15:8];
+                    19 : readdata <= checksum[23:16];
+                    20 : readdata <= checksum[31:24];
                 endcase
         end
         else begin
             readdata <= 8'h00;
         end
     end
-
+    assign payload_len = {reg_file[13], reg_file[12]};
     //Frame State Machine
-    always_ff @(poesdge clk) begin
+    always_ff @(posedge clk) begin
         if(reset) begin
             sending <= 0;
             byte_counter <= 0;
             wait_counter <= 0;
         end 
         else begin
-            payload_len = {reg_file[13], reg_file[12]};
             if(!sending && wait_counter == 0) begin
                 sending <= 1;
                 byte_counter <= 0;
@@ -137,7 +136,6 @@ module frame_generator #(
     always_comb begin
         egress_port_tvalid = sending;
         egress_port_tlast = (byte_counter >= (16 + payload_len -2));
-        egress_port_tdata = 16'h0000;
         if(sending) begin
             unique case (byte_counter)
                 //dst
@@ -158,6 +156,8 @@ module frame_generator #(
                     end
                 end
             endcase
+        end else begin
+            egress_port_tdata = 16'h0000;
         end
     end
 endmodule
