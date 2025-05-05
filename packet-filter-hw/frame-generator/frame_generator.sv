@@ -133,31 +133,37 @@ module frame_generator #(
     end
 
     //Frame data
-    always_comb begin
-        egress_port_tvalid = sending;
-        egress_port_tlast = (byte_counter >= (16 + payload_len -2));
-        if(sending) begin
-            unique case (byte_counter)
-                //dst
-                0  : egress_port_tdata = {reg_file[0], reg_file[1]};
-                2  : egress_port_tdata = {reg_file[2], reg_file[3]};
-                4  : egress_port_tdata = {reg_file[4], reg_file[5]};
-                //source
-                6  : egress_port_tdata = {reg_file[6], reg_file[7]};
-                8  : egress_port_tdata = {reg_file[8], reg_file[9]};
-                10 : egress_port_tdata = {reg_file[10], reg_file[11]};
-                //length
-                12 : egress_port_tdata = {reg_file[12], reg_file[13]};
-                //type
-                14 : egress_port_tdata = {reg_file[14], reg_file[15]};
-                default: begin
-                    if(byte_counter >= 16 && byte_counter < (16 + payload_len)) begin
-                        egress_port_tdata = payload_byte;
-                    end
-                end
-            endcase
+    always_ff @(posedge clk) begin
+        if(reset)begin
+            egress_port_tdata <= 16'h0000;
+            egress_port_tvalid <= 0;
+            egress_port_tlast <= 0;
         end else begin
-            egress_port_tdata = 16'h0000;
+            egress_port_tvalid <= sending;
+            egress_port_tlast <= (byte_counter >= (16 + payload_len -2));
+            if(sending) begin
+                unique case (byte_counter)
+                    //dst
+                    0  : egress_port_tdata <= {reg_file[0], reg_file[1]};
+                    2  : egress_port_tdata <= {reg_file[2], reg_file[3]};
+                    4  : egress_port_tdata <= {reg_file[4], reg_file[5]};
+                    //source
+                    6  : egress_port_tdata <= {reg_file[6], reg_file[7]};
+                    8  : egress_port_tdata <= {reg_file[8], reg_file[9]};
+                    10 : egress_port_tdata <= {reg_file[10], reg_file[11]};
+                    //length
+                    12 : egress_port_tdata <= {reg_file[12], reg_file[13]};
+                    //type
+                    14 : egress_port_tdata <= {reg_file[14], reg_file[15]};
+                    default: begin
+                        if(byte_counter >= 16 && byte_counter < (16 + payload_len)) begin
+                            egress_port_tdata <= payload_byte;
+                        end
+                    end
+                endcase
+            end else begin
+                egress_port_tdata <= 16'h0000;
+            end
         end
     end
 endmodule
