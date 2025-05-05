@@ -1,9 +1,14 @@
 
+`ifdef VERILATOR
 `include "packet_filter.svh"
+`else
+`include "../include/packet_filter.svh"
+`endif
 `include "filter_defs.svh"
 
 `timescale 1 ps / 1 ps
 module frame_buffer #(
+    parameter STUBBING = `STUBBING_PASSTHROUGH,
     parameter ALMOST_FULL_THRESHOLD = 10,
     parameter ADDR_WIDTH = 11,
     parameter NUM_CYCLONE_5CSEMA5_BLOCKS = 4
@@ -36,7 +41,7 @@ module frame_buffer #(
     logic [19:0] frame_wdata;
     logic frame_full;
     logic next_almost_full;
-    logic [ADDR_WIDTH-1:0] frame_ptr_diff;
+    logic [ADDR_WIDTH:0] frame_ptr_diff;
 
     // egress frame control
     logic next_last_entry;
@@ -65,7 +70,7 @@ module frame_buffer #(
     // Capacity logic
     assign next_frame_rptr = frame_rptr + 1;
     assign next_last_entry = (next_frame_rptr === frame_wptr) ? 1'b1 : 1'b0;
-    assign frame_ptr_diff = {frame_wptr - frame_rptr}[ADDR_WIDTH-1:0];
+    assign frame_ptr_diff = frame_wptr - frame_rptr;
     always_comb begin
 `ifdef VERILATOR
         if ({{(32-ADDR_WIDTH){1'b0}}, frame_ptr_diff[ADDR_WIDTH-1:0]} >= ALMOST_FULL_THRESHOLD) begin
