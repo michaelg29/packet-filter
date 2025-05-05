@@ -32,7 +32,7 @@ module frame_receptor #(
 	);
 
 	/* Register file. */
-	logic [7:0] inter_frame_wait;
+	//logic [7:0] inter_frame_wait;
     logic [7:0]  reg_file [0:16];
     logic [31:0] checksum;
 
@@ -49,7 +49,7 @@ module frame_receptor #(
     // register write interface
     always_ff @(posedge clk) begin
         if (reset) begin
-            inter_frame_wait <= 8'h0;
+            //inter_frame_wait <= 8'h0;
             for (int i = 0; i <= 16; i++)
                 reg_file[i] <= 8'h00;
             checksum <= 0;
@@ -69,11 +69,11 @@ module frame_receptor #(
             if(address <= 16)
                 readdata <= reg_file[address];
             else if (address >= 17 && address <= 20)
-                case (address & 4)
-                    0 : readdata <= checksum[31:24];
-                    1 : readdata <= checksum[7:0];
-                    2 : readdata <= checksum[15:8];
-                    3 : readdata <= checksum[23:16];
+                case (address)
+                    17 : readdata <= checksum[7:0];
+                    18 : readdata <= checksum[15:8];
+                    19 : readdata <= checksum[23:16];
+                    20 : readdata <= checksum[31:24];
                 endcase
         end
         else begin
