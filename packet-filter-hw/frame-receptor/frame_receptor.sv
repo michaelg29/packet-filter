@@ -15,7 +15,7 @@
 
 `timescale 1 ps / 1 ps
 module frame_receptor #(
-        parameter STUBBING = `STUBBING_PASSTHROUGH
+       // parameter STUBBING = `STUBBING_PASSTHROUGH
     ) (
 		input  wire        clk,                 //          clock.clk
 		input  wire        reset,               //          reset.reset
@@ -33,36 +33,51 @@ module frame_receptor #(
 
 	/* Register file. */
 	logic [7:0] inter_frame_wait;
+    logic [7:0]  reg_file [0:16];
+    logic [31:0] checksum;
 
-generate
-if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
+// generate
+// if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 
-	assign ingress_port_tready = 1'b0;
+// 	assign ingress_port_tready = 1'b0;
 
-end else begin: g_functional
+// end else begin: g_functional
 
-end
-endgenerate
-
+// end
+// endgenerate
+    assign ingress_port_tready = ingress_port_tlast ? 1 : 0;
     // register write interface
     always_ff @(posedge clk) begin
         if (reset) begin
             inter_frame_wait <= 8'h0;
+            for (int i = 0; i <= 16; i++)
+                reg_file[i] <= 8'h00;
+            checksum <= 0;
         end else if (chipselect && write) begin
-            case (address)
-                8'h0 : inter_frame_wait <= writedata[7:0];
-            endcase
+            if(address <= 16) begin
+                reg_file[address] <= writedata;
+            end
+            else if(address > 16 && address < (16 + {reg_file[13], reg_file[12]})) begin
+                checksum <= checksum + writedata;
+            end
         end
     end
 
     // register read interface
     always_ff @(posedge clk) begin
-        if (reset) begin
-            readdata <= 8'b0;
-        end else if (chipselect && read) begin
-            case (address)
-                8'h0 : readdata <= inter_frame_wait;
-            endcase
+        if (chipselect && read) begin
+            if(address <= 16)
+                readdata <= reg_file[address];
+            else if (address >= 17 && address <= 20)
+                case (address & 4)
+                    0 : readdata <= checksum[31:24];
+                    1 : readdata <= checksum[7:0];
+                    2 : readdata <= checksum[15:8];
+                    3 : readdata <= checksum[23:16];
+                endcase
+        end
+        else begin
+            readdata <= 8'h00;
         end
     end
 
