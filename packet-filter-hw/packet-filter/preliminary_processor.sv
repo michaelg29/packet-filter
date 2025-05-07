@@ -28,10 +28,15 @@ module preliminary_processor #(
 
 );
 
-    packet_source_t packet_source;
+    frame_status f_status;
+    packet_source_t dst_mac_source;
+    packet_source_t type_source;
 
-    assign packet_source.tvalid = ingress_pkt.tvalid;
-    assign packet_source.tdata = ingress_pkt.tdata;
+    assign status = f_status;
+    assign dst_mac_source.tvalid = ingress_pkt.tvalid & f_status.scan_dst_mac;
+    assign dst_mac_source.tdata = ingress_pkt.tdata;
+    assign type_source.tvalid = ingress_pkt.tvalid & f_status.scan_type;
+    assign type_source.tdata = ingress_pkt.tdata;
 
     // input FSM
     input_fsm #(
@@ -47,7 +52,7 @@ module preliminary_processor #(
 /* verilator lint_off PINCONNECTEMPTY */
         .incomplete_frame(), // TODO evaluate if need this
 /* verilator lint_on PINCONNECTEMPTY */
-        .status(status)
+        .status(f_status)
     );
 
     // destination calculator
@@ -56,7 +61,7 @@ module preliminary_processor #(
     ) u_dest_calculator (
         .clk(clk),
         .reset(reset),
-        .dst_mac_pkt(packet_source),
+        .dst_mac_pkt(dst_mac_source),
         .dest(frame_dest)
     );
 
@@ -66,9 +71,28 @@ module preliminary_processor #(
     ) u_type_checker (
         .clk(clk),
         .reset(reset),
-        .type_pkt(packet_source),
+        .type_pkt(type_source),
         .drop(frame_type)
     );
+
+`ifdef ASSERT
+
+    // assert grant is held for an entire frame
+    assertion_preliminary_processor_frame_grant : assert property(
+        @(posedge clk) disable iff (reset)
+        ingress_source.tvalid & ingress_sink.tready & ~ingress_pkt.tlast
+            |=> ingress_sink.tready || ingress_source.tlast
+    ) else $error($sformatf("assertion_preliminary_processor_frame_grant failed at %0t", $realtime));
+
+    // do not provide grants if almost full
+    assertion_preliminary_processor_almost_full : assert property(
+        @(posedge clk) disable iff (reset)
+        almost_full && (~ingress_source.tvalid || ingress_pkt.tlast)
+            |=> ~ingress_sink.tready
+    ) else $error($sformatf("assertion_preliminary_processor_almost_full failed at %0t", $realtime));
+
+
+`endif
 
 endmodule
 
