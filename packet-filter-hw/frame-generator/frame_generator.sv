@@ -38,29 +38,29 @@ module frame_generator #(
        parameter STUBBING = `STUBBING_PASSTHROUGH,
        parameter CAN_RESET_POINTERS = 0
     ) (
-		input  wire        clk,                //          clock.clk
-		input  wire        reset,              //          reset.reset
-		input  wire [7:0]  writedata,          // avalon_slave_0.writedata
-		input  wire        write,              //               .write
-		input  wire        chipselect,         //               .chipselect
-		input  wire [7:0]  address,            //               .address
-		input  wire        read,               //               .read
+		input  wire         clk,                //          clock.clk
+		input  wire         reset,              //          reset.reset
+		input  wire  [7:0]  writedata,          // avalon_slave_0.writedata
+		input  wire         write,              //               .write
+		input  wire         chipselect,         //               .chipselect
+		input  wire  [7:0]  address,            //               .address
+		input  wire         read,               //               .read
 		output logic [7:0]  readdata,           //               .readdata
 		output logic [15:0] egress_port_tdata,  //    egress_port.tdata
 		output logic        egress_port_tlast,  //               .tlast
-		input  wire        egress_port_tready, //               .tready
+		input  wire         egress_port_tready, //               .tready
 		output logic        egress_port_tvalid  //               .tvalid
 	);
 
 	/* Register file. */
     logic [7:0]  reg_file [0:16];
     logic [31:0] checksum;
-    //logic [15:0] payload_len;
     logic [15:0] payload_byte;
-    logic [7:0]  byte_counter;
+    logic [15:0]  byte_counter;
     logic        sending;
     logic [7:0]  wait_counter;
-
+    logic [15:0] input_counter;
+    //logic [15:0] type_temp;
     // register write interface
     always_ff @(posedge clk) begin
         if (reset) begin
@@ -68,18 +68,40 @@ module frame_generator #(
                 reg_file[i] <= 8'h00;
             checksum <= 0;
             payload_byte <= 0;
+	    input_counter <= 0;
+	    //type_temp <= 0;
         end else if (chipselect && write) begin
-            if(address <= 16) begin
-                reg_file[address[4:0]] <= writedata;
-            end
-            else if(address > 16 && address < (16 + reg_file[12])) begin
-                if(address[0])
-                    payload_byte[7:0] <= writedata;
-                else
-                    payload_byte[15:8] <= writedata;
-                checksum <= checksum + {24'b0, writedata};
-            end
-        end
+            if(input_counter <= 15) begin
+                reg_file[input_counter[4:0]] <= writedata;
+		input_counter <= input_counter + 1;
+            //end else if(input_counter == 12) begin
+		//type_temp[7:0] <= writedata;
+		//input_counter <= input_counter + 1;
+	    //end else if(input_counter == 13) begin
+		//type_temp[15:8] <= writedata;
+		//input_counter <= input_counter + 1;
+            end else if(input_counter >= 16) begin
+		//if(type_temp < 16'h05DC) begin
+		    //reg_file[12] <= type_temp[7:0];
+		   // reg_file[13] <= type_temp[15:8];
+		if({reg_file[13], reg_file[12]} != 0) begin
+		    if(input_counter < (16 + {reg_file[13], reg_file[12]})) begin
+		        if(!input_counter[0])
+                    	    payload_byte[7:0] <= writedata;
+                    	else
+                            payload_byte[15:8] <= writedata;
+                        checksum <= checksum + {24'b0, writedata};
+		        input_counter <= input_counter + 1;
+		    end else begin
+		    	reg_file[16] <= writedata;
+		        input_counter <= 0;
+		    end	
+		end else begin
+		    reg_file[16] <= writedata;
+	    	    input_counter <= 0;	
+		end	            
+	    end
+        end	
     end
 
     // register read interface
@@ -99,7 +121,6 @@ module frame_generator #(
             readdata <= 8'h00;
         end
     end
-    //assign payload_len = {reg_file[13], reg_file[12]};
     //Frame State Machine
     always_ff @(posedge clk) begin
         if(reset) begin
@@ -113,11 +134,11 @@ module frame_generator #(
                 byte_counter <= 0;
             end
             else if (sending && egress_port_tready) begin
-                byte_counter <= byte_counter + 2;
-                if(byte_counter == (16 + reg_file[12] - 2)) begin
+                if(byte_counter >= (24 + {reg_file[13], reg_file[12]})) begin
                     sending <= 0;
                     wait_counter <= reg_file[16];
-                end
+                end else
+		    byte_counter <= byte_counter + 2;
             end
             else if(!sending && wait_counter > 0) begin
                 wait_counter <= wait_counter - 1;
@@ -128,26 +149,35 @@ module frame_generator #(
     //Frame data
     always_comb begin
         egress_port_tvalid = sending;
-        egress_port_tlast = (byte_counter >= (16 + reg_file[12] -2));
+        egress_port_tlast = (byte_counter == (24 + {reg_file[13], reg_file[12]} -2));
         egress_port_tdata = 16'h0000;
         if(sending) begin
             unique case (byte_counter)
+		//preamble
+		0  : egress_port_tdata = 16'hAAAA;
+		2  : egress_port_tdata = 16'hAAAA;
+		4  : egress_port_tdata = 16'hAAAA;
+		//preamble & sfd
+		6  : egress_port_tdata = 16'hAAAB;
                 //dst
-                0  : egress_port_tdata = {reg_file[0], reg_file[1]};
-                2  : egress_port_tdata = {reg_file[2], reg_file[3]};
-                4  : egress_port_tdata = {reg_file[4], reg_file[5]};
+                8  : egress_port_tdata = {reg_file[0], reg_file[1]};
+                10  : egress_port_tdata = {reg_file[2], reg_file[3]};
+                12  : egress_port_tdata = {reg_file[4], reg_file[5]};
                 //source
-                6  : egress_port_tdata = {reg_file[6], reg_file[7]};
-                8  : egress_port_tdata = {reg_file[8], reg_file[9]};
-                10 : egress_port_tdata = {reg_file[10], reg_file[11]};
+                14  : egress_port_tdata = {reg_file[6], reg_file[7]};
+                16  : egress_port_tdata = {reg_file[8], reg_file[9]};
+                18 : egress_port_tdata = {reg_file[10], reg_file[11]};
                 //length
-                12 : egress_port_tdata = {reg_file[12], reg_file[13]};
+                20 : egress_port_tdata = {reg_file[12], reg_file[13]};
                 //type
-                14 : egress_port_tdata = {reg_file[14], reg_file[15]};
+                22 : egress_port_tdata = {reg_file[14], reg_file[15]};
                 default: begin
-                    if(byte_counter >= 16 && byte_counter < (16 + reg_file[12])) begin
-                        egress_port_tdata = payload_byte;
-                    end
+                    if(byte_counter >= 24) begin
+			if({reg_file[13], reg_file[12]} != 0) begin
+			    if(byte_counter < (24 + {reg_file[13], reg_file[12]}))			
+                            	egress_port_tdata = payload_byte;
+			end
+		    end
                 end
             endcase
 	end

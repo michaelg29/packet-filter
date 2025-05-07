@@ -37,67 +37,158 @@ int main(int argc, const char ** argv, const char ** env) {
       dut->chipselect = 0;
       dut->address = 0;
       dut->read = 0;
-      dut->egress_port_tready = 0;
+      dut->egress_port_tready = 1;
 
       // new stimulus
       switch (time) {
+      //reading address check
+      //case 50:
+        //dut->reset = 0;
+	//dut->chipselect = 1;
+        //dut->writedata = 1;
+        //dut->write = 1;
+        //break;
+      //case 70:
+	//dut->chipselect = 1;
+        //dut->writedata = 2;
+        //dut->write = 1;
+        //break;
+      //case 90:
+	//dut->chipselect = 1;
+        //dut->writedata = 3;
+        //dut->write = 1;
+        //break;
+      //case 110:
+	//dut->address = 0;
+	//dut->chipselect = 1;
+        //dut->read = 1;
+        //break;
+      //case 130:
+	//dut->address = 1;
+	//dut->chipselect = 1;
+        //dut->read = 1;
+       // break;
+      //case 150:
+	//dut->address = 2;
+	//dut->chipselect = 1;
+        //dut->read = 1;
+	//dut->reset = 1;
+        //break;
+
+      //write ethernet type packet
       case 50:
         dut->reset = 0;
 	dut->chipselect = 1;
         dut->writedata = 1;
         dut->write = 1;
+	dut->egress_port_tready = 0;
         break;
       case 70:
+	dut->chipselect = 1;
+        dut->writedata = 2;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
         break;
       case 90:
 	dut->chipselect = 1;
-        dut->read = 1;
-        break;
-
-      case 130:
-	dut->address = 1;
+        dut->writedata = 3;
         dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 110:
 	dut->chipselect = 1;
-        dut->writedata = 12;
-	//dut->egress_port_tready = 1;
+        dut->writedata = 4;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 130:
+	dut->chipselect = 1;
+        dut->writedata = 5;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
         break;
       case 150:
-	dut->address = 1;
 	dut->chipselect = 1;
-        dut->read = 1;
-        break;
-
-      case 180:
-	dut->address = 2;
+        dut->writedata = 6;
         dut->write = 1;
-	dut->chipselect = 1;
-        dut->writedata = 16;
-	//dut->egress_port_tready = 1;
+	dut->egress_port_tready = 0;
         break;
-      case 220:
-	dut->address = 2;
+      case 170:
 	dut->chipselect = 1;
-        dut->read = 1;
-        break;
-
-      case 270:
-	dut->address = 3;
+        dut->writedata = 7;
         dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 190:
+	dut->chipselect = 1;
+        dut->writedata = 8;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 210:
+	dut->chipselect = 1;
+        dut->writedata = 9;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 230:
 	dut->chipselect = 1;
         dut->writedata = 10;
-	dut->egress_port_tready = 1;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
         break;
-      case 300:
-	dut->address = 3;
+      case 250:
 	dut->chipselect = 1;
-	dut->egress_port_tready = 1;
-        dut->read = 1;
+        dut->writedata = 11;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
         break;
-
+      case 270:
+	dut->chipselect = 1;
+        dut->writedata = 12;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 290:
+	dut->chipselect = 1;
+        dut->writedata = 0x01;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 310:
+	dut->chipselect = 1;
+        dut->writedata = 0x00;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 330:
+	dut->chipselect = 1;
+        dut->writedata = 0xFF;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
       case 350:
+	dut->chipselect = 1;
+        dut->writedata = 0xFF;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 370:
+	dut->chipselect = 1;
+        dut->writedata = 10;
+        dut->write = 1;
+	dut->egress_port_tready = 0;
+        break;
+      case 390:
+	dut->chipselect = 1;
+        dut->writedata = 10;
+        dut->write = 1;
 	dut->egress_port_tready = 1;
         break;
-      case 400:
+      case 410:
+	dut->egress_port_tready = 1;
+        break;
+      case 430:
 	dut->egress_port_tready = 1;
         break;
       };
