@@ -122,6 +122,7 @@ module sideband_buffer #(
     );
     /* verilator lint_on PINCONNECTEMPTY */
 
+`ifdef ASSERT
     /* Assertions. */
 
     // only write valid frames
@@ -145,5 +146,6 @@ module sideband_buffer #(
         @(posedge clk) disable iff (reset)
         frame_drop |-> scan_frame || $past(scan_frame, 1)
     ) else $error("Failed assertion");
+`endif
 
 endmodule

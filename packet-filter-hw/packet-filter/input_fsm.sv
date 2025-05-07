@@ -250,6 +250,7 @@ module input_fsm #(
     end
 `endif
 
+`ifdef ASSERT
     /* Assertions */
 
     // assert grant is held for an entire frame
@@ -281,6 +282,7 @@ module input_fsm #(
         @(posedge clk) disable iff (reset)
         current_frame_dropped |-> frame_status_str === FRAME_STATUS_IDLE || ingress_source.tlast
     ) else $error("Failed assertion");
+`endif
 `endif
 
 endmodule

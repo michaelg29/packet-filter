@@ -15,11 +15,11 @@ module preliminary_processor #(
     input  logic reset,
 
     input  axis_source_t ingress_source,
-    input  axis_sink_t   ingress_sink,
+    output axis_sink_t   ingress_sink,
     output axis_source_t ingress_pkt,
 
     input  logic drop_write,
-    output logic almost_full,
+    input  logic almost_full,
     output frame_status status,
     output dest_source_t frame_dest,
     output drop_source_t frame_type
@@ -42,7 +42,9 @@ module preliminary_processor #(
         .drop_current(drop_write),
         .almost_full(almost_full),
         .ingress_pkt(ingress_pkt),
+/* verilator lint_off PINCONNECTEMPTY */
         .incomplete_frame(), // TODO evaluate if need this
+/* verilator lint_on PINCONNECTEMPTY */
         .status(status)
     );
 

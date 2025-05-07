@@ -20,14 +20,14 @@
 `define NUM_EGRESS_PORTS 4
 
 // AXIS data source
-typedef struct packed{
+typedef struct {
     logic [`AXIS_DWIDTH-1:0] tdata;
     logic                    tvalid;
     logic                    tlast;
 } axis_source_t;
 
 // AXIS data source with destination field
-typedef struct packed{
+typedef struct {
     logic [`AXIS_DWIDTH-1:0]     tdata;
     logic                        tvalid;
     logic                        tlast;
@@ -35,7 +35,7 @@ typedef struct packed{
 } axis_d_source_t;
 
 // AXIS data sink
-typedef struct packed{
+typedef struct {
     logic tready;
 } axis_sink_t;
 typedef axis_sink_t axis_d_sink_t;

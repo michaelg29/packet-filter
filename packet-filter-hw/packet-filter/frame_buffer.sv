@@ -161,6 +161,7 @@ module frame_buffer #(
         end
     end
 
+`ifdef ASSERT
     assertion_frame_buffer_almost_full : assert property(
         @(posedge clk) disable iff (reset)
         (size >= ALMOST_FULL_THRESHOLD) |=> almost_full
@@ -170,6 +171,7 @@ module frame_buffer #(
         @(posedge clk) disable iff (reset)
         (size === 1) |=> last_entry
     ) else $error("Failed assertion");
+`endif
 `endif
 
 endmodule

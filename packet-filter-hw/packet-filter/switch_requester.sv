@@ -238,6 +238,7 @@ module switch_requester #(
         end
     end
 
+`ifdef ASSERT
     /* Assertions. */
 
     // assert data does not get lost (tdata does not change while tvalid is high if tready was not asserted)
@@ -293,5 +294,6 @@ module switch_requester #(
         @(posedge clk) disable iff (reset)
         first_last |=> ~first_last
     ) else $error("Failed assertion");
+`endif
 
 endmodule

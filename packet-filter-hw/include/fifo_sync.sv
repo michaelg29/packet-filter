@@ -187,28 +187,30 @@ module fifo_sync #(
     assign next_full = (ptr_overlap && next_rptr[ADDR_WIDTH] !== next_wptr[ADDR_WIDTH]) ? 1'b1 : 1'b0;
     assign next_empty =  (ptr_overlap && next_rptr[ADDR_WIDTH] === next_wptr[ADDR_WIDTH]) ? 1'b1 : 1'b0;
 
-    // // assert FIFO displays full until a read completes
-    // assertion_fifo_sync_full_until_read : assert property(
-    //     @(posedge clk) disable iff (rrst || wrst)
-    //     $rose(full) |=> full || $past(ren, 1)
-    // ) else $error($sformatf("assertion_fifo_sync_full_until_read failed at %0t", $realtime));
+`ifdef ASSERT
+    // assert FIFO displays full until a read completes
+    assertion_fifo_sync_full_until_read : assert property(
+        @(posedge clk) disable iff (rrst || wrst)
+        $rose(full) |=> full || $past(ren, 1)
+    ) else $error($sformatf("assertion_fifo_sync_full_until_read failed at %0t", $realtime));
 
-    // // assert FIFO displays empty until a write completes
-    // assertion_fifo_sync_empty_until_write : assert property(
-    //     @(posedge clk) disable iff (rrst || wrst)
-    //     $rose(empty) |=> empty || $past(wen, 1)
-    // ) else $error($sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
+    // assert FIFO displays empty until a write completes
+    assertion_fifo_sync_empty_until_write : assert property(
+        @(posedge clk) disable iff (rrst || wrst)
+        $rose(empty) |=> empty || $past(wen, 1)
+    ) else $error($sformatf("assertion_fifo_sync_empty_until_write failed at %0t", $realtime));
 
-    // // assert read reset and read enable not asserted at the same time
-    // assertion_fifo_sync_read_reset_enable : assert property(
-    //     @(posedge clk) disable iff (reset)
-    //     ~(rrst & ren)
-    // ) else $error("Read enable and read reset asserted in the same cycle");
+    // assert read reset and read enable not asserted at the same time
+    assertion_fifo_sync_read_reset_enable : assert property(
+        @(posedge clk) disable iff (reset)
+        ~(rrst & ren)
+    ) else $error("Read enable and read reset asserted in the same cycle");
 
-    // // assert write reset and write enable not asserted at the same time
-    // assertion_fifo_sync_write_reset_enable : assert property(
-    //     @(posedge clk) disable iff (reset)
-    //     ~(wrst & wen)
-    // ) else $error("Write enable and write reset asserted in the same cycle");
+    // assert write reset and write enable not asserted at the same time
+    assertion_fifo_sync_write_reset_enable : assert property(
+        @(posedge clk) disable iff (reset)
+        ~(wrst & wen)
+    ) else $error("Write enable and write reset asserted in the same cycle");
+`endif
 
 endmodule
