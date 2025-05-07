@@ -19,6 +19,8 @@
 `define NUM_INGRESS_PORTS 4
 `define NUM_EGRESS_PORTS 4
 
+/* verilator lint_off UNPACKED */
+
 // AXIS data source
 typedef struct {
     logic [`AXIS_DWIDTH-1:0] tdata;
@@ -39,5 +41,7 @@ typedef struct {
     logic tready;
 } axis_sink_t;
 typedef axis_sink_t axis_d_sink_t;
+
+/* verilator lint_on UNPACKED */
 
 `endif // _PACKET_FILTER_SVH_

@@ -1,11 +1,14 @@
-.PHONY: default clean $(DUT_TOP).vcd lint
 
 HOST=$(shell hostname)
 
 DUT_TOP ?= top
 SVFILES ?= $(DUT_TOP).sv
+TESTING_LEVEL ?= 0
 VLOG_DEFINES ?=
 VLOG_GENERICS ?=
+
+.PHONY: default clean $(DUT_TOP).vcd lint
+.DEFAULT_GOAL := all
 
 INCLUDE_FLAG = -I../../include
 ifdef SYS_PORTION
@@ -42,6 +45,8 @@ $(DUT_TOP).vcd: obj_dir/V$(DUT_TOP)
 # view waveform
 gtkwave: $(DUT_TOP).vcd
 	gtkwave $(DUT_TOP).vcd
+
+all: obj_dir/V$(DUT_TOP) $(DUT_TOP).vcd
 
 clean:
 	rm -rf obj_dir *.vcd

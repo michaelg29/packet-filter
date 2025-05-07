@@ -14,6 +14,8 @@
 `endif
 `include "filter_defs.svh"
 
+`ifdef TOP_TESTING
+
 `timescale 1 ps / 1 ps
 module packet_filter #(
         parameter STUBBING = `STUBBING_PASSTHROUGH,
@@ -192,3 +194,5 @@ endgenerate
 	assign irq = 1'b0;
 
 endmodule
+
+`endif

@@ -240,10 +240,8 @@ module input_fsm #(
         endcase
     endfunction
 
-    string state_str, state_d_str, next_state_str;
+    string state_str;
     assign state_str = conv_state_to_str(state);
-    assign state_d_str = conv_state_to_str(state_d);
-    assign next_state_str = conv_state_to_str(next_state);
 
     always @(posedge clk) begin
         $display("state is %s\n", state_str);

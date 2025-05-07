@@ -6,6 +6,8 @@
 `endif
 `include "filter_defs.svh"
 
+`ifdef INTG_TESTING_1
+
 // Integrate input_fsm, type_field_checker, and dest_calculator
 `timescale 1 ps / 1 ps
 module preliminary_processor #(
@@ -69,3 +71,5 @@ module preliminary_processor #(
     );
 
 endmodule
+
+`endif

@@ -2,6 +2,8 @@
 `ifndef _FILTER_DEFS_SVH
 `define _FILTER_DEFS_SVH
 
+/* verilator lint_off UNPACKED */
+
 // Frame status broadcast in input filter
 typedef struct {
     logic scan_frame;
@@ -29,5 +31,7 @@ typedef struct {
     logic       tvalid;
     logic       tuser;
 } drop_source_t;
+
+/* verilator lint_on UNPACKED */
 
 `endif // _FILTER_DEFS_SVH

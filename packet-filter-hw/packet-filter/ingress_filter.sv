@@ -6,6 +6,8 @@
 `endif
 `include "filter_defs.svh"
 
+`ifdef TOP_TESTING
+
 // Integrate preliminary_processor and request_buffer
 `timescale 1 ps / 1 ps
 module ingress_filter #(
@@ -101,3 +103,5 @@ end
 endgenerate
 
 endmodule
+
+`endif

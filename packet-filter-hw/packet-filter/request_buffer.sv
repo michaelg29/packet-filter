@@ -6,6 +6,8 @@
 `endif
 `include "filter_defs.svh"
 
+`ifdef INTG_TESTING_1
+
 // Integrate sideband_buffer, frame_buffer, and switch_requester
 `timescale 1 ps / 1 ps
 module request_buffer #(
@@ -112,3 +114,5 @@ module request_buffer #(
     );
 
 endmodule
+
+`endif
