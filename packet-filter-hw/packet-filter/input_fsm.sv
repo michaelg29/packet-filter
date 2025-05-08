@@ -50,44 +50,34 @@ module input_fsm #(
     localparam FRAME_STATUS_PAYLOAD = 5'b10001;
 
     // Status signals
-    logic       tready_int;
-    logic       prev_ready;
+    logic next_tready;
     logic [4:0] frame_status_str;
 
     // Ingress interface
-    assign handshake_complete = ingress_sink.tready & ingress_source.tvalid;
-    assign ingress_sink.tready = ingress_pkt.tvalid
-        ? tready_int
-        : ingress_source.tvalid & ~almost_full;
-    assign ingress_sink.tready = tready_int;
+    assign handshake_complete = next_tready & ingress_pkt.tvalid;
+    always_comb begin
+        // assert backpressure when not enough space for a full frame
+        //   and not done with the current frame if a frame is ingressing
+        if (almost_full) begin
+            // hold ready until completed transaction
+            next_tready = ingress_sink.tready & ~ingress_pkt.tlast;
+        end else begin
+            // turn on with new request or while waiting for request to terminate
+            next_tready = ingress_source.tvalid & ~(ingress_sink.tready & ingress_pkt.tlast);
+        end
+    end
     always_ff @(posedge clk) begin: p_ingress
         if (reset) begin
             ingress_pkt.tvalid <= 1'b0;
             ingress_pkt.tdata <= 16'b0;
             ingress_pkt.tlast <= 1'b0;
-            tready_int <= 1'b0;
-            prev_ready <= 1'b0;
+            ingress_sink.tready <= 1'b0;
         end else begin
             // save packet
             ingress_pkt.tvalid <= handshake_complete;
             ingress_pkt.tdata  <= ingress_source.tdata;
             ingress_pkt.tlast  <= ingress_source.tlast;
-
-            // assert backpressure when not enough space for a full frame
-            //   and not done with the current frame if a frame is ingressing
-            prev_ready <= ingress_sink.tready;
-            if (almost_full) begin
-                if (state_transition_en) begin
-                    // hold ready until completed transaction
-                    tready_int <= ~ingress_pkt.tlast;
-                end else begin
-                    // if no handshake, turn off with backpressure
-                    tready_int <= 1'b0;
-                end
-            end else begin
-                // turn on with new request or while waiting for request to terminate
-                tready_int <= ingress_source.tvalid & ~(prev_ready & ingress_pkt.tlast);
-            end
+            ingress_sink.tready <= next_tready;
         end
     end
 
@@ -134,9 +124,6 @@ module input_fsm #(
         next_state = state;
         case (state)
         IDLE: begin
-            //if (ingress_pkt.tlast) begin
-            //    next_state = FLUSH;
-            //end else if (ingress_pkt.tdata === 16'hAAAB) begin
             if (ingress_pkt.tdata === 16'hAAAB) begin
                 next_state = DST_MAC;
             end
@@ -257,6 +244,12 @@ module input_fsm #(
 
 `ifdef ASSERT
     /* Assertions */
+
+    // assert tready provided one cycle after first tvalid
+    assertion_input_fsm_tready_delay : assert property(
+        @(posedge clk) disable iff (reset)
+        ~ingress_source.tvalid |=> ~ingress_sink.tready
+    ) else $error("Assertion failed");
 
     // assert grant is held for an entire frame
     assertion_input_fsm_frame_grant : assert property(
