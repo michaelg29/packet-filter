@@ -104,18 +104,24 @@ module frame_receptor #(
             checksum <= 0;
             input_counter <= 0;
         end else if (ingress_port_tvalid && (inter_frame_wait == 0)) begin
-            if(input_counter <= 3) begin
+            if(input_counter <= 2) begin
                 checksum <= 0;
                 input_counter <= input_counter + 1;
-            end else if(input_counter >= 4 && input_counter <= 6) begin
-                reg_file[7][input_counter - 4] <= ({reg_file[input_counter - 4], reg_file[input_counter - 3]} == ingress_port_tdata);
+            end else if(input_counter == 3) begin
+                reg_file[7][0] <= ({reg_file[1], reg_file[0]} == ingress_port_tdata);
                 input_counter <= input_counter + 1;
-            end else if(input_counter >= 7 && input_counter <= 10) begin
+            end else if(input_counter == 4) begin
+                reg_file[7][1] <= ({reg_file[3], reg_file[2]} == ingress_port_tdata);
                 input_counter <= input_counter + 1;
-            end else if(input_counter >= 11 && !ingress_port_tlast) begin
+            end else if(input_counter == 5) begin
+                reg_file[7][2] <= ({reg_file[5], reg_file[4]} == ingress_port_tdata);
+                input_counter <= input_counter + 1;
+            end else if(input_counter >= 6 && input_counter <= 9) begin
+                input_counter <= input_counter + 1;
+            end else if(input_counter >= 10 && !ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
                 input_counter <= input_counter + 1;
-            end else if(input_counter >= 11 && ingress_port_tlast) begin
+            end else if(input_counter >= 10 && ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
                 input_counter <= 0;
             end
