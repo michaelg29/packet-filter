@@ -37,10 +37,10 @@ module frame_receptor #(
 		input  wire        chipselect,          //               .chipselect
 		input  wire [7:0]  address,             //               .address
 		input  wire        read,                //               .read
-		output wire [7:0]  readdata,            //               .readdata
+		output logic [7:0]  readdata,            //               .readdata
 		input  wire [15:0] ingress_port_tdata,  //   ingress_port.tdata
 		input  wire        ingress_port_tvalid, //               .tvalid
-		output wire        ingress_port_tready, //               .tready
+		output logic        ingress_port_tready, //               .tready
 		input  wire        ingress_port_tlast   //               .tlast
 	);
 
@@ -62,12 +62,12 @@ module frame_receptor #(
     // register write interface
     always_ff @(posedge clk) begin
         if(reset) begin
-            for (int i = 0; i <= 6; i++)
+            for (int i = 0; i <= 7; i++)
                 reg_file[i] <= 8'h00;
         end
         else if (chipselect && write)  begin
-            if(address <= 6)
-                inter_frame_wait <= writedata;
+            if(address <= 7)
+                reg_file[address[2:0]] <= writedata;
         end
     end
     //inter_frame_wait signal
@@ -85,11 +85,11 @@ module frame_receptor #(
     always_ff @(posedge clk) begin
         if (chipselect && read) begin
             if(address <= 7)
-                readdata <= reg_file[address];
+                readdata <= reg_file[address[2:0]];
             else if (address >= 8 && address <= 11)
                 case (address)
-                    8 : readdata <= checksum[7:0];
-                    9 : readdata <= checksum[15:8];
+                    8  : readdata <= checksum[7:0];
+                    9  : readdata <= checksum[15:8];
                     10 : readdata <= checksum[23:16];
                     11 : readdata <= checksum[31:24];
                 endcase
@@ -105,6 +105,7 @@ module frame_receptor #(
             input_counter <= 0;
         end else if (ingress_port_tvalid && (inter_frame_wait == 0)) begin
             if(input_counter <= 3) begin
+                checksum <= 0;
                 input_counter <= input_counter + 1;
             end else if(input_counter >= 4 && input_counter <= 6) begin
                 reg_file[7][input_counter - 4] <= ({reg_file[input_counter - 4], reg_file[input_counter - 3]} == ingress_port_tdata);

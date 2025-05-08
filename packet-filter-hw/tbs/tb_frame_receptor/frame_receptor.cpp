@@ -129,16 +129,16 @@ int main(int argc, const char ** argv, const char ** env) {
         break;
       case 390:
         dut->ingress_port_tvalid = 1;
-        dut->ingress_port_tdata = 0xAAAA;
+        dut->ingress_port_tdata = 0x0001;
         break;
       case 410:
         dut->ingress_port_tvalid = 1;
-        dut->ingress_port_tdata = 0xAAAA;
+        dut->ingress_port_tdata = 0x0002;
         break;
       case 430:
         dut->ingress_port_tvalid = 1;
         dut->ingress_port_tlast = 1;
-        dut->ingress_port_tdata = 0xAAAA;
+        dut->ingress_port_tdata = 0x0003;
         break;
       };
     }
