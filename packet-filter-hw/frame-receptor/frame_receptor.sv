@@ -49,6 +49,7 @@ module frame_receptor #(
     logic [7:0]  reg_file [0:7];
     logic [31:0] checksum;
     logic [15:0] input_counter;
+    logic [7:0] frame_counter;
 // generate
 // if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 
@@ -103,6 +104,7 @@ module frame_receptor #(
         if (reset) begin
             checksum <= 0;
             input_counter <= 0;
+            frame_counter <= 0;
         end else if (ingress_port_tvalid && (inter_frame_wait == 0)) begin
             if(input_counter <= 2) begin
                 checksum <= 0;
@@ -123,6 +125,7 @@ module frame_receptor #(
                 input_counter <= input_counter + 1;
             end else if(input_counter >= 10 && ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
+                frame_counter <= frame_counter + 1;
                 input_counter <= 0;
             end
         end

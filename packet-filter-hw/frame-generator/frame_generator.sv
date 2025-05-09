@@ -60,6 +60,7 @@ module frame_generator #(
     logic        sending;
     logic [7:0]  wait_counter;
     logic [15:0] input_counter;
+    logic [7:0] frame_counter;
     //logic [15:0] type_temp;
     // register write interface
     always_ff @(posedge clk) begin
@@ -127,6 +128,7 @@ module frame_generator #(
             sending <= 0;
             byte_counter <= 0;
             wait_counter <= 0;
+            frame_counter <= 0;
         end
         else begin
             if(!sending && wait_counter == 0 && egress_port_tready) begin
@@ -135,6 +137,7 @@ module frame_generator #(
             end
             else if (sending && egress_port_tready) begin
                 if(byte_counter >= (24 + {reg_file[13], reg_file[12]})) begin
+                    frame_counter <= frame_counter + 1;
                     sending <= 0;
                     wait_counter <= reg_file[16];
                 end else
