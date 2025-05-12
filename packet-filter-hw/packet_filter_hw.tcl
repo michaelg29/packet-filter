@@ -41,6 +41,7 @@ set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE true
 add_fileset_file packet_filter.sv SYSTEM_VERILOG PATH packet-filter/packet_filter.sv TOP_LEVEL_FILE
 add_fileset_file packet_filter.svh OTHER PATH include/packet_filter.svh
+add_fileset_file synth_defs.svh OTHER PATH include/synth_defs.svh
 add_fileset_file fifo_sync.sv SYSTEM_VERILOG PATH include/fifo_sync.sv
 add_fileset_file ingress_filter.sv SYSTEM_VERILOG PATH packet-filter/ingress_filter.sv
 add_fileset_file filter_defs.svh OTHER PATH packet-filter/filter_defs.svh
@@ -57,14 +58,14 @@ add_fileset_file type_field_checker.sv SYSTEM_VERILOG PATH packet-filter/type_fi
 #
 # parameters
 #
-add_parameter STUBBING INTEGER 0
+add_parameter STUBBING INTEGER 1
 set_parameter_property STUBBING DEFAULT_VALUE 0
 set_parameter_property STUBBING DISPLAY_NAME STUBBING
 set_parameter_property STUBBING TYPE INTEGER
 set_parameter_property STUBBING UNITS None
 set_parameter_property STUBBING ALLOWED_RANGES -2147483648:2147483647
 set_parameter_property STUBBING HDL_PARAMETER true
-add_parameter ALMOST_FULL_THRESHOLD INTEGER 10
+add_parameter ALMOST_FULL_THRESHOLD INTEGER 750
 set_parameter_property ALMOST_FULL_THRESHOLD DEFAULT_VALUE 10
 set_parameter_property ALMOST_FULL_THRESHOLD DISPLAY_NAME ALMOST_FULL_THRESHOLD
 set_parameter_property ALMOST_FULL_THRESHOLD TYPE INTEGER
@@ -82,7 +83,7 @@ set_parameter_property NUM_CYCLONE_5CSEMA5_BLOCKS DISPLAY_NAME NUM_CYCLONE_5CSEM
 set_parameter_property NUM_CYCLONE_5CSEMA5_BLOCKS TYPE INTEGER
 set_parameter_property NUM_CYCLONE_5CSEMA5_BLOCKS UNITS None
 set_parameter_property NUM_CYCLONE_5CSEMA5_BLOCKS HDL_PARAMETER true
-add_parameter TIMEOUT_CTR_WIDTH INTEGER 3
+add_parameter TIMEOUT_CTR_WIDTH INTEGER 10
 set_parameter_property TIMEOUT_CTR_WIDTH DEFAULT_VALUE 3
 set_parameter_property TIMEOUT_CTR_WIDTH DISPLAY_NAME TIMEOUT_CTR_WIDTH
 set_parameter_property TIMEOUT_CTR_WIDTH TYPE INTEGER

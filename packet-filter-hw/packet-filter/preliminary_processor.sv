@@ -3,6 +3,7 @@
 `include "packet_filter.svh"
 `else
 `include "../include/packet_filter.svh"
+`include "../include/synth_defs.svh"
 `endif
 `include "filter_defs.svh"
 

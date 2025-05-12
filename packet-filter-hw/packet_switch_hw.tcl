@@ -41,6 +41,9 @@ set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE true
 add_fileset_file packet_switch.sv SYSTEM_VERILOG PATH packet-switch/packet_switch.sv TOP_LEVEL_FILE
 add_fileset_file packet_filter.svh OTHER PATH include/packet_filter.svh
+add_fileset_file synth_defs.svh OTHER PATH include/synth_defs.svh
+add_fileset_file mux4to1.sv SYSTEM_VERILOG PATH packet-switch/mux4to1.sv
+add_fileset_file rr_scheduler.sv SYSTEM_VERILOG PATH packet-switch/rr_scheduler.sv
 
 
 # 
