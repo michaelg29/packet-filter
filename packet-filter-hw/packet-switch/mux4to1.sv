@@ -1,6 +1,6 @@
 module mux4to1 #(
     parameter N_PORTS = 4,
-    parameter DATA_WIDTH = 32,
+    parameter DATA_WIDTH = 16,
     parameter IDX_WIDTH = $clog2(N_PORTS)
 )(
     input  logic [N_PORTS-1:0][DATA_WIDTH-1:0] ingress_data,
