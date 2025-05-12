@@ -16,18 +16,21 @@ VerilatedVcdC *tfp;
 int realtime;
 
 int tdata_cnt = 1;
+eth_frame_t frame;
 
 // realtime step
-void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
+void tick(int half_cycles, int tready) {
+  uint16_t tdata;
   for (int i = 0; i < half_cycles; ++i, realtime += HFCLK) {
     dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
     if (!dut->clk && last_clock) {
-      dut->status = { 0, 0, 0, 0, 0 }; // scan_frame, dst_mac, src_mac, type, payload
-      dut->frame_type = { 0, 0 }; // valid, user
+      tdata = get_tdata(&frame);
+      dut->status = { frame.status.a[0], frame.status.a[1], frame.status.a[2], frame.status.a[3], frame.status.a[4] }; // scan_frame, dst_mac, src_mac, type, payload
+      dut->frame_type = { frame.status.a[3], 0 }; // valid, user
       dut->frame_dest = { 0, 0, 0 }; // data, valid, user
-      dut->ingress_pkt = { 0, 0, 0 }; // data, valid, last
-      dut->egress_sink = { 0 }; // tready
+      dut->ingress_pkt = { tdata, frame.valid, frame.last }; // data, valid, last
+      dut->egress_sink = { tready }; // tready
     }
 
     // tick
@@ -45,50 +48,36 @@ void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
 
 
 
-void send_frame(int preamble_delay, int frame_length, int drop_count, int almost_full_count) {
-  int this_tdata_cnt = 1;
-
+void send_frame(bool type_valid, uint32_t dest, bool dest_valid, uint32_t ready_delay) {
   while (true) {
     // toggle clock
     dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-    int tdata;
-    if (this_tdata_cnt < preamble_delay) {
-      tdata = 0xAAAA;
-    }
-    else if (this_tdata_cnt == preamble_delay) {
-      tdata = 0xAAAB;
-    }
-    else {
-      tdata = this_tdata_cnt;
-    }
-
     if (!dut->clk && last_clock) {
-      // default stimulus
-      //dut->drop_write = this_tdata_cnt == drop_count;
-      //dut->almost_full = almost_full_count > 0 && this_tdata_cnt >= almost_full_count;
-      //dut->ingress_source = {tdata, // data
-      //  this_tdata_cnt <= frame_length,  // valid
-      //  this_tdata_cnt == frame_length}; // last
+      dut->status = { frame.status.a[0], frame.status.a[1], frame.status.a[2], frame.status.a[3], frame.status.a[4] }; // scan_frame, dst_mac, src_mac, type, payload
+      dut->frame_type = { frame.status.a[3], !type_valid }; // valid, user
+      dut->frame_dest = { dest, frame.status.a[2], !dest_valid }; // data, valid, user
+      dut->ingress_pkt = { get_tdata(&frame), 1, frame.last }; // data, valid, last
+      dut->egress_sink = { ready_delay == 0 }; // tready
     }
 
     // tick
     dut->eval();     // Run the simulation for a cycle
     tfp->dump(realtime); // Write the VCD file for this cycle
     if (dut->clk && !last_clock) {
-      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
-      //if (dut->ingress_sink.__PVT__tready) {
-      //  std::cout << "ready" << std::endl;
-      //  this_tdata_cnt++;
-      //}
-      //else {
-      //  std::cout << "not ready" << std::endl;
-      //}
+      if (realtime >= 60) std::cout << realtime << ": " << "cursor is " << frame.cursor << " out of " << frame.last_cursor << std::endl; // Print the next value
+
+      update_frame(&frame, 1);
+
+      if (dut->egress_source.__PVT__tvalid && ready_delay) {
+        ready_delay--;
+      }
     }
     last_clock = dut->clk;
     realtime += HFCLK;
 
-    if (this_tdata_cnt > frame_length) {
+    if (frame.done) {
+      std::cout << "Frame completed transmission." << std::endl;
       break;
     }
   }
@@ -96,7 +85,7 @@ void send_frame(int preamble_delay, int frame_length, int drop_count, int almost
 
 void reset() {
   dut->reset = 1;
-  tick(RESET_HALF_CYCLES, 0, 0, 0, 0);
+  tick(RESET_HALF_CYCLES, 0);
   dut->reset = 0;
 }
 
@@ -123,17 +112,11 @@ int main(int argc, const char ** argv, const char ** env) {
 
   reset();
 
-  send_frame(11, 50, 0, 0);
+  init_frame(&frame, 1, 11, 50, false, 0, 0);
+  send_frame(true, 1, true, 6);
 
-  tick(32, 0, 0, 0, 0);
-
-  send_frame(11, 80, 30, 0);
-
-  tick(32, 0, 0, 0, 0);
-
-  send_frame(11, 80, 0, 30);
-
-  tick(32, 0, 0, 0, 0);
+  tick(80, 1);
+  tick(32, 0);
 
   std::cout << std::endl;
 

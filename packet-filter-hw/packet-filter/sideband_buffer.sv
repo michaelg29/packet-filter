@@ -48,15 +48,22 @@ module sideband_buffer #(
     logic        written;
     logic [19:0] wdata;
 
+    // registers to delay empty signaling
+    logic prev_reset;
+    logic fifo_empty;
+
     always_ff @(posedge clk) begin
         wdata[19:ADDR_WIDTH+`AXIS_DEST_WIDTH+1] <= '0;
+        prev_reset <= reset;
         if (reset) begin
             wen <= 1'b0;
             written <= 1'b0;
             wdata <= '0;
             valid_fields <= '0;
             frame_drop <= 1'b0;
+            empty <= 1'b1;
         end else begin
+            empty <= fifo_empty | prev_reset;
             if (scan_frame) begin
                 // save destination
                 if (frame_dest.tvalid) begin
@@ -74,7 +81,7 @@ module sideband_buffer #(
                 valid_fields[FIELD_IDX_WPTR] <= 1'b1;
 
                 // write enable
-                wen <= &valid_fields & ~written;
+                wen <= &valid_fields & ~written & ~wen;
                 written <= wen | written;
 
                 // drop detection
@@ -109,7 +116,7 @@ module sideband_buffer #(
         .reset    (reset),
         .ren      (ren),
         .rdata    (rdata),
-        .empty    (empty),
+        .empty    (fifo_empty),
         .wdata    (wdata),
         .wen      (wen),
         .full     (full),

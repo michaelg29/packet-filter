@@ -88,49 +88,23 @@ void init_frame(eth_frame_t *frame, uint32_t dest, uint32_t preamble_packets, ui
 uint16_t get_tdata(eth_frame_t *frame) {
   uint32_t cursor = frame->cursor;
   if (cursor < frame->preamble_bytes) {
-    return 0xAAAA;
-  }
-  else if (cursor == frame->preamble_bytes) {
-    return 0xAAAB;
-  }
-  else {
-    cursor -= frame->preamble_bytes + 2;
-
-    if (cursor < 6) {
-      return frame->dst_mac[cursor >> 1];
-    }
-    else if (cursor < 12) {
-      return frame->src_mac[(cursor - 6) >> 1];
-    }
-    else if (cursor < 14) {
-      return frame->ethertype;
-    }
-    else if (cursor < 14 + frame->payload_length) {
-      return cursor - 14;
-    }
-    else {
-      return 0xAAAA;
-    }
-  }
-}
-
-void update_frame(eth_frame_t *frame, bool ready) {
-  uint32_t cursor = frame->cursor;
-
-  // set status flags
-  if (cursor < frame->preamble_bytes) {
     frame->status.s.scan_frame = false;
     frame->status.s.scan_dst_mac = false;
     frame->status.s.scan_src_mac = false;
     frame->status.s.scan_type = false;
     frame->status.s.scan_payload = false;
+
+    return 0xAAAA;
   }
   else if (cursor == frame->preamble_bytes) {
     frame->status.s.scan_frame = true;
+    std::cout << "Sending AAAB with scan_frame = true" << std::endl;
     frame->status.s.scan_dst_mac = false;
     frame->status.s.scan_src_mac = false;
     frame->status.s.scan_type = false;
     frame->status.s.scan_payload = false;
+
+    return 0xAAAB;
   }
   else {
     cursor -= frame->preamble_bytes + 2;
@@ -141,6 +115,8 @@ void update_frame(eth_frame_t *frame, bool ready) {
       frame->status.s.scan_src_mac = false;
       frame->status.s.scan_type = false;
       frame->status.s.scan_payload = false;
+
+      return frame->dst_mac[cursor >> 1];
     }
     else if (cursor < 12) {
       frame->status.s.scan_frame = true;
@@ -148,6 +124,8 @@ void update_frame(eth_frame_t *frame, bool ready) {
       frame->status.s.scan_src_mac = true;
       frame->status.s.scan_type = false;
       frame->status.s.scan_payload = false;
+
+      return frame->src_mac[(cursor - 6) >> 1];
     }
     else if (cursor < 14) {
       frame->status.s.scan_frame = true;
@@ -155,6 +133,8 @@ void update_frame(eth_frame_t *frame, bool ready) {
       frame->status.s.scan_src_mac = false;
       frame->status.s.scan_type = true;
       frame->status.s.scan_payload = false;
+
+      return frame->ethertype;
     }
     else if (cursor < 14 + frame->payload_length) {
       frame->status.s.scan_frame = true;
@@ -162,6 +142,8 @@ void update_frame(eth_frame_t *frame, bool ready) {
       frame->status.s.scan_src_mac = false;
       frame->status.s.scan_type = false;
       frame->status.s.scan_payload = true;
+
+      return cursor - 14;
     }
     else {
       frame->status.s.scan_frame = false;
@@ -169,9 +151,13 @@ void update_frame(eth_frame_t *frame, bool ready) {
       frame->status.s.scan_src_mac = false;
       frame->status.s.scan_type = false;
       frame->status.s.scan_payload = false;
+
+      return 0xAAAA;
     }
   }
+}
 
+void update_frame(eth_frame_t *frame, bool ready) {
   // advance cursor
   if (frame->valid && ready) {
     frame->cursor += 2; // 16-bit=2-byte packets
@@ -198,8 +184,8 @@ void update_frame(eth_frame_t *frame, bool ready) {
   }
 
   // assert drop and almost full flags
-  frame->drop = frame->drop_wait > 0 && cursor == frame->drop_wait;
-  frame->almost_full = frame->almost_full || (frame->almost_full_wait > 0 && cursor >= frame->almost_full_wait);
+  frame->drop = frame->drop_wait > 0 && frame->cursor == frame->drop_wait;
+  frame->almost_full = frame->almost_full || (frame->almost_full_wait > 0 && frame->cursor >= frame->almost_full_wait);
 }
 
 void report(eth_frame_t *frame, uint32_t cycles, uint32_t period_ns) {

@@ -1,24 +1,65 @@
 [*]
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
-[*] Thu May  8 21:57:58 2025
+[*] Mon May 12 17:16:16 2025
 [*]
 [dumpfile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/request_buffer.vcd"
-[dumpfile_mtime] "Thu May  8 21:55:02 2025"
-[dumpfile_size] 5652624
+[dumpfile_mtime] "Mon May 12 17:12:12 2025"
+[dumpfile_size] 24864
 [savefile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/request_buffer.gtkw"
-[timestart] 0
-[size] 1266 681
+[timestart] 339
+[size] 1232 686
 [pos] -1 -1
-*0.000000 3 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.736699 500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.request_buffer.
+[treeopen] TOP.request_buffer.u_sideband.
 [sst_width] 193
-[signals_width] 150
+[signals_width] 133
 [sst_expanded] 1
-[sst_vpaned_height] 195
+[sst_vpaned_height] 222
 @28
 TOP.request_buffer.clk
 TOP.request_buffer.reset
+@200
+-ingress
+@28
+TOP.ingress_pkt.tvalid
+TOP.ingress_pkt.tlast
+@22
+TOP.ingress_pkt.tdata[15:0]
+@200
+-egress
+@28
+TOP.egress_source.tvalid
+TOP.egress_source.tdest[1:0]
+@22
+TOP.egress_source.tdata[15:0]
+@28
+TOP.egress_source.tlast
+TOP.egress_sink.tready
+TOP.request_buffer.u_requester.frame_ren
+TOP.request_buffer.u_requester.sideband_ren
+@200
+-frame_dest
+@28
+TOP.frame_dest.tvalid
+TOP.frame_dest.tuser
+TOP.frame_dest.tdata[1:0]
+TOP.request_buffer.u_sideband.wen
+@22
+TOP.request_buffer.u_sideband.wdata[19:0]
+@29
+TOP.request_buffer.u_sideband.empty
+@28
+TOP.request_buffer.u_sideband.written
+TOP.request_buffer.u_sideband.ren
+@22
+TOP.request_buffer.u_sideband.rdata[19:0]
+@200
+-frame_type
+@28
+TOP.frame_type.tvalid
+TOP.frame_type.tuser
 @200
 -status
 @28
@@ -27,40 +68,7 @@ TOP.status.scan_dst_mac
 TOP.status.scan_src_mac
 TOP.status.scan_type
 TOP.status.scan_payload
-@200
--frame_type
-@28
-TOP.request_buffer.frame_type.tvalid
-TOP.request_buffer.frame_type.tuser
-@200
--frame_dest
-@28
-TOP.request_buffer.frame_dest.tvalid
-TOP.request_buffer.frame_dest.tdata[1:0]
-TOP.request_buffer.frame_dest.tuser
-@200
--ingress_pkt
-@28
-TOP.request_buffer.ingress_pkt.tvalid
-@22
-TOP.request_buffer.ingress_pkt.tdata[15:0]
-@28
-TOP.request_buffer.ingress_pkt.tlast
-@200
--output control
-@28
+TOP.request_buffer.timeout
 TOP.request_buffer.drop_write
-TOP.request_buffer.almost_full
-@200
--egress
-@28
-TOP.egress_source.tvalid
-@22
-TOP.egress_source.tdata[15:0]
-@28
-TOP.egress_source.tdest[1:0]
-TOP.egress_source.tlast
-@29
-TOP.egress_sink.tready
 [pattern_trace] 1
 [pattern_trace] 0

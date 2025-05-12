@@ -269,7 +269,7 @@ module switch_requester #(
     // assert do not read from FIFO until receive payload of the first frame
     assertion_switch_requester_premature_read : assert property(
         @(posedge clk) disable iff (reset)
-        ~scan_payload && sideband_empty |-> ~frame_ren
+        ~scan_payload && sideband_empty && ~$past(frame_ren, 1) |-> ~frame_ren
     ) else $error("Failed assertion");
 
     // assert do not read from an empty FIFO (will fail if empty transitions high in middle of cycle as in the testbench)
