@@ -12,7 +12,7 @@
  *        4W   |  Destination MAC |  Destination MAC byte 4.
  *        5W   |  Destination MAC |  Destination MAC byte 5.
  *        6W   | Inter-frame wait |  Cycles to wait between frames.
-  *       7R   |         dstCheck |  Destination check.
+  *       7R   |         dstcheck |  Destination check.
  *        8R   |         Checksum |  Payload checksum byte 0.
  *        9R   |         Checksum |  Payload checksum byte 1.
  *        10R  |         Checksum |  Payload checksum byte 2.
@@ -46,7 +46,8 @@ module frame_receptor #(
 
 	/* Register file. */
     logic [7:0] inter_frame_wait;
-    logic [7:0]  reg_file [0:7];
+    logic [7:0]  reg_file [0:6];
+    logic [7:0] dstcheck;
     logic [31:0] checksum;
     logic [15:0] input_counter;
     logic [7:0] frame_counter;
@@ -63,11 +64,11 @@ module frame_receptor #(
     // register write interface
     always_ff @(posedge clk) begin
         if(reset) begin
-            for (int i = 0; i <= 7; i++)
+            for (int i = 0; i <= 6; i++)
                 reg_file[i] <= 8'h00;
         end
         else if (chipselect && write)  begin
-            if(address <= 7)
+            if(address <= 6)
                 reg_file[address[2:0]] <= writedata;
         end
     end
@@ -85,10 +86,11 @@ module frame_receptor #(
     // register read interface
     always_ff @(posedge clk) begin
         if (chipselect && read) begin
-            if(address <= 7)
+            if(address <= 6)
                 readdata <= reg_file[address[2:0]];
-            else if (address >= 8 && address <= 11)
+            else if (address >= 7 && address <= 11)
                 case (address)
+                    7: : readdata <= dstcheck;
                     8  : readdata <= checksum[7:0];
                     9  : readdata <= checksum[15:8];
                     10 : readdata <= checksum[23:16];
@@ -105,18 +107,26 @@ module frame_receptor #(
             checksum <= 0;
             input_counter <= 0;
             frame_counter <= 0;
+            dstcheck <= 0;
         end else if (ingress_port_tvalid && (inter_frame_wait == 0)) begin
             if(input_counter <= 2) begin
                 checksum <= 0;
+                dstcheck <= 0;
                 input_counter <= input_counter + 1;
             end else if(input_counter == 3) begin
-                reg_file[7][0] <= ({reg_file[1], reg_file[0]} == ingress_port_tdata);
+                if({reg_file[1], reg_file[0]} == ingress_port_tdata) begin
+                    dstcheck <= dstcheck + 1;
+                end
                 input_counter <= input_counter + 1;
             end else if(input_counter == 4) begin
-                reg_file[7][1] <= ({reg_file[3], reg_file[2]} == ingress_port_tdata);
+                if({reg_file[3], reg_file[2]} == ingress_port_tdata) begin
+                    dstcheck <= dstcheck + 1;
+                end
                 input_counter <= input_counter + 1;
             end else if(input_counter == 5) begin
-                reg_file[7][2] <= ({reg_file[5], reg_file[4]} == ingress_port_tdata);
+                if({reg_file[5], reg_file[4]} == ingress_port_tdata) begin
+                    dstcheck <= dstcheck + 1;
+                end
                 input_counter <= input_counter + 1;
             end else if(input_counter >= 6 && input_counter <= 9) begin
                 input_counter <= input_counter + 1;
