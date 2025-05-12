@@ -18,6 +18,7 @@ module switch_requester #(
 
     // frame status
     input  logic scan_payload,
+    output logic timeout,
 
     // sideband buffer
     input  logic [19:0] sideband_rdata,
@@ -25,7 +26,7 @@ module switch_requester #(
     output logic sideband_ren,
 
     // frame buffer
-    input  logic [15:0]         frame_rdata,
+    input  logic [19:0]         frame_rdata,
     input  logic                frame_last_entry,
     input  logic [ADDR_WIDTH:0] frame_rptr,
     output logic                frame_ren,
@@ -87,7 +88,6 @@ module switch_requester #(
     end
 
     /* Propagate next state. */
-
     always_ff @(posedge clk) begin
         if (reset) begin
             state <= IDLE;
@@ -213,6 +213,7 @@ module switch_requester #(
     end
 
     // output generation
+    assign timeout = timeout_ctr[TIMEOUT_CTR_WIDTH];
     always_ff @(posedge clk) begin
         if (reset) begin
             frame_ren <= 1'b0;
@@ -225,7 +226,7 @@ module switch_requester #(
 
             // latch read data
             if (next_frame_ren) begin
-                egress_source.tdata <= frame_rdata;
+                egress_source.tdata <= frame_rdata[15:0];
             end else begin
                 egress_source.tdata <= egress_source.tdata;
             end

@@ -19,6 +19,8 @@
 `define NUM_INGRESS_PORTS 4
 `define NUM_EGRESS_PORTS 4
 
+`define ETH_SFD 16'hAAAB
+
 /* verilator lint_off UNPACKED */
 
 // AXIS data source

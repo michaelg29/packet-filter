@@ -3,21 +3,21 @@
 # DO NOT MODIFY
 
 
-# 
+#
 # packet_filter "Packet Filter" v1.0
 #  2025.05.05.14:09:24
-# 
-# 
+#
+#
 
-# 
+#
 # request TCL package from ACDS 16.1
-# 
+#
 package require -exact qsys 16.1
 
 
-# 
+#
 # module packet_filter
-# 
+#
 set_module_property DESCRIPTION ""
 set_module_property NAME packet_filter
 set_module_property VERSION 1.0
@@ -32,9 +32,9 @@ set_module_property ALLOW_GREYBOX_GENERATION false
 set_module_property REPORT_HIERARCHY false
 
 
-# 
+#
 # file sets
-# 
+#
 add_fileset QUARTUS_SYNTH QUARTUS_SYNTH "" ""
 set_fileset_property QUARTUS_SYNTH TOP_LEVEL packet_filter
 set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
@@ -54,9 +54,9 @@ add_fileset_file switch_requester.sv SYSTEM_VERILOG PATH packet-filter/switch_re
 add_fileset_file type_field_checker.sv SYSTEM_VERILOG PATH packet-filter/type_field_checker.sv
 
 
-# 
+#
 # parameters
-# 
+#
 add_parameter STUBBING INTEGER 0
 set_parameter_property STUBBING DEFAULT_VALUE 0
 set_parameter_property STUBBING DISPLAY_NAME STUBBING
@@ -90,22 +90,22 @@ set_parameter_property TIMEOUT_CTR_WIDTH UNITS None
 set_parameter_property TIMEOUT_CTR_WIDTH HDL_PARAMETER true
 
 
-# 
+#
 # module assignments
-# 
+#
 set_module_assignment embeddedsw.dts.group packet_filter
 set_module_assignment embeddedsw.dts.name packet_filter
 set_module_assignment embeddedsw.dts.vendor csee4840
 
 
-# 
+#
 # display items
-# 
+#
 
 
-# 
+#
 # connection point clock
-# 
+#
 add_interface clock clock end
 set_interface_property clock clockRate 0
 set_interface_property clock ENABLED true
@@ -117,9 +117,9 @@ set_interface_property clock SVD_ADDRESS_GROUP ""
 add_interface_port clock clk clk Input 1
 
 
-# 
+#
 # connection point reset
-# 
+#
 add_interface reset reset end
 set_interface_property reset associatedClock clock
 set_interface_property reset synchronousEdges DEASSERT
@@ -132,9 +132,9 @@ set_interface_property reset SVD_ADDRESS_GROUP ""
 add_interface_port reset reset reset Input 1
 
 
-# 
+#
 # connection point avalon_slave_0
-# 
+#
 add_interface avalon_slave_0 avalon end
 set_interface_property avalon_slave_0 addressUnits WORDS
 set_interface_property avalon_slave_0 associatedClock clock
@@ -158,21 +158,21 @@ set_interface_property avalon_slave_0 PORT_NAME_MAP ""
 set_interface_property avalon_slave_0 CMSIS_SVD_VARIABLES ""
 set_interface_property avalon_slave_0 SVD_ADDRESS_GROUP ""
 
-add_interface_port avalon_slave_0 writedata writedata Input 8
+add_interface_port avalon_slave_0 writedata writedata Input 32
 add_interface_port avalon_slave_0 write write Input 1
 add_interface_port avalon_slave_0 chipselect chipselect Input 1
 add_interface_port avalon_slave_0 address address Input 8
 add_interface_port avalon_slave_0 read read Input 1
-add_interface_port avalon_slave_0 readdata readdata Output 8
+add_interface_port avalon_slave_0 readdata readdata Output 32
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isFlash 0
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isMemoryDevice 0
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isNonVolatileStorage 0
 set_interface_assignment avalon_slave_0 embeddedsw.configuration.isPrintableDevice 0
 
 
-# 
+#
 # connection point ingress_port_0
-# 
+#
 add_interface ingress_port_0 axi4stream end
 set_interface_property ingress_port_0 associatedClock clock
 set_interface_property ingress_port_0 associatedReset reset
@@ -188,9 +188,9 @@ add_interface_port ingress_port_0 ingress_port_0_tready tready Output 1
 add_interface_port ingress_port_0 ingress_port_0_tlast tlast Input 1
 
 
-# 
+#
 # connection point ingress_port_1
-# 
+#
 add_interface ingress_port_1 axi4stream end
 set_interface_property ingress_port_1 associatedClock clock
 set_interface_property ingress_port_1 associatedReset reset
@@ -206,9 +206,9 @@ add_interface_port ingress_port_1 ingress_port_1_tvalid tvalid Input 1
 add_interface_port ingress_port_1 ingress_port_1_tready tready Output 1
 
 
-# 
+#
 # connection point ingress_port_2
-# 
+#
 add_interface ingress_port_2 axi4stream end
 set_interface_property ingress_port_2 associatedClock clock
 set_interface_property ingress_port_2 associatedReset reset
@@ -224,9 +224,9 @@ add_interface_port ingress_port_2 ingress_port_2_tvalid tvalid Input 1
 add_interface_port ingress_port_2 ingress_port_2_tready tready Output 1
 
 
-# 
+#
 # connection point ingress_port_3
-# 
+#
 add_interface ingress_port_3 axi4stream end
 set_interface_property ingress_port_3 associatedClock clock
 set_interface_property ingress_port_3 associatedReset reset
@@ -242,9 +242,9 @@ add_interface_port ingress_port_3 ingress_port_3_tlast tlast Input 1
 add_interface_port ingress_port_3 ingress_port_3_tvalid tvalid Input 1
 
 
-# 
+#
 # connection point egress_port_0
-# 
+#
 add_interface egress_port_0 axi4stream start
 set_interface_property egress_port_0 associatedClock clock
 set_interface_property egress_port_0 associatedReset reset
@@ -261,9 +261,9 @@ add_interface_port egress_port_0 egress_port_0_tvalid tvalid Output 1
 add_interface_port egress_port_0 egress_port_0_tdest tdest Output 2
 
 
-# 
+#
 # connection point egress_port_1
-# 
+#
 add_interface egress_port_1 axi4stream start
 set_interface_property egress_port_1 associatedClock clock
 set_interface_property egress_port_1 associatedReset reset
@@ -280,9 +280,9 @@ add_interface_port egress_port_1 egress_port_1_tvalid tvalid Output 1
 add_interface_port egress_port_1 egress_port_1_tdest tdest Output 2
 
 
-# 
+#
 # connection point egress_port_2
-# 
+#
 add_interface egress_port_2 axi4stream start
 set_interface_property egress_port_2 associatedClock clock
 set_interface_property egress_port_2 associatedReset reset
@@ -299,9 +299,9 @@ add_interface_port egress_port_2 egress_port_2_tvalid tvalid Output 1
 add_interface_port egress_port_2 egress_port_2_tdest tdest Output 2
 
 
-# 
+#
 # connection point egress_port_3
-# 
+#
 add_interface egress_port_3 axi4stream start
 set_interface_property egress_port_3 associatedClock clock
 set_interface_property egress_port_3 associatedReset reset
@@ -318,9 +318,9 @@ add_interface_port egress_port_3 egress_port_3_tvalid tvalid Output 1
 add_interface_port egress_port_3 egress_port_3_tdest tdest Output 2
 
 
-# 
+#
 # connection point packet_filter_interrupt
-# 
+#
 add_interface packet_filter_interrupt interrupt end
 set_interface_property packet_filter_interrupt associatedAddressablePoint ""
 set_interface_property packet_filter_interrupt associatedClock clock

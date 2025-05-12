@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Vpreliminary_processor.h"
+#include "../tb_common/packet_filter.h"
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
@@ -15,6 +16,7 @@ VerilatedVcdC *tfp;
 int realtime;
 
 int tdata_cnt = 1;
+eth_frame_t frame;
 
 // realtime step
 void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
@@ -47,50 +49,41 @@ void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
 
 
 
-void send_frame(int preamble_delay, int frame_length, int drop_count, int almost_full_count) {
-  int this_tdata_cnt = 1;
+void send_frame(int timeout_count) {
+  int not_ready_count = 0;
 
   while (true) {
     // toggle clock
     dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-    int tdata;
-    if (this_tdata_cnt < preamble_delay) {
-      tdata = 0xAAAA;
-    }
-    else if (this_tdata_cnt == preamble_delay) {
-      tdata = 0xAAAB;
-    }
-    else {
-      tdata = this_tdata_cnt;
-    }
-
     if (!dut->clk && last_clock) {
-      // default stimulus
-      dut->drop_write = this_tdata_cnt == drop_count;
-      dut->almost_full = almost_full_count > 0 && this_tdata_cnt >= almost_full_count;
-      dut->ingress_source = {tdata, // data
-        this_tdata_cnt <= frame_length,  // valid
-        this_tdata_cnt == frame_length}; // last
+      dut->drop_write = frame.drop;
+      dut->almost_full = frame.almost_full;
+      dut->ingress_source = {get_tdata(&frame), 1, frame.last};
     }
 
     // tick
     dut->eval();     // Run the simulation for a cycle
     tfp->dump(realtime); // Write the VCD file for this cycle
     if (dut->clk && !last_clock) {
-      if (realtime >= 60) std::cout << realtime << ": " << dut->ingress_sink.__PVT__tready << "count is " << this_tdata_cnt << " out of " << frame_length << std::endl; // Print the next value
-      if (dut->ingress_sink.__PVT__tready) {
-        std::cout << "ready" << std::endl;
-        this_tdata_cnt++;
-      }
-      else {
-        std::cout << "not ready" << std::endl;
+      if (realtime >= 60) std::cout << realtime << ": " << dut->ingress_sink.__PVT__tready << "cursor is " << frame.cursor << " out of " << frame.last_cursor << std::endl; // Print the next value
+
+      update_frame(&frame, dut->ingress_sink.__PVT__tready);
+
+      if (frame.valid && !dut->ingress_sink.__PVT__tready) {
+        ++not_ready_count;
       }
     }
     last_clock = dut->clk;
     realtime += HFCLK;
 
-    if (this_tdata_cnt > frame_length) {
+    if (frame.done) {
+      std::cout << "Frame completed transmission." << std::endl;
+      break;
+    }
+
+    if (not_ready_count >= timeout_count) {
+      std::cout << "Transmission timed out" << std::endl;
       break;
     }
   }
@@ -116,6 +109,7 @@ int main(int argc, const char ** argv, const char ** env) {
 
   // Initial values
   dut->reset = 1;
+  init_statistics_collection(&frame);
 
   // first frame
 
@@ -125,15 +119,29 @@ int main(int argc, const char ** argv, const char ** env) {
 
   reset();
 
-  send_frame(11, 50, 0, 0);
+  //init_frame(eth_frame_t *frame, uint32_t dest, uint32_t preamble_packets, uint32_t payload_length, bool init_almost_full, uint32_t almost_full_wait, uint32_t drop_wait)
+  init_frame(&frame, 0, 11, 50, false, 0, 0);
+  send_frame(30);
 
   tick(32, 0, 0, 0, 0);
 
-  send_frame(11, 80, 30, 0);
+  init_frame(&frame, 0, 11, 80, false, 30, 0);
+  send_frame(30);
 
   tick(32, 0, 0, 0, 0);
 
-  send_frame(11, 80, 0, 30);
+  init_frame(&frame, 0, 11, 80, false, 0, 30);
+  send_frame(30);
+
+  tick(32, 0, 0, 0, 0);
+
+  init_frame(&frame, 0, 11, 80, true, 0, 0);
+  send_frame(30);
+
+  tick(32, 0, 0, 0, 0);
+
+  init_frame(&frame, 0, 11, 80, false, 0, 0);
+  send_frame(30);
 
   tick(32, 0, 0, 0, 0);
 
@@ -144,6 +152,8 @@ int main(int argc, const char ** argv, const char ** env) {
 
   dut->final(); // Stop the simulation
   delete dut;
+
+  report(&frame, realtime / CLK, CLK);
 
   return 0;
 }

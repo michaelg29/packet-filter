@@ -50,11 +50,12 @@ module input_fsm #(
     localparam FRAME_STATUS_PAYLOAD = 5'b10001;
 
     // Status signals
+    logic sfd_received;
     logic next_tready;
     logic [4:0] frame_status_str;
 
     // Ingress interface
-    assign handshake_complete = next_tready & ingress_pkt.tvalid;
+    assign handshake_complete = next_tready & ingress_source.tvalid;
     always_comb begin
         // assert backpressure when not enough space for a full frame
         //   and not done with the current frame if a frame is ingressing
@@ -120,11 +121,12 @@ module input_fsm #(
         // otherwise, transition to next state
         : (state_transition_en
             ? next_state : state);
+    assign sfd_received = ingress_pkt.tdata === `ETH_SFD;
     always_comb begin: p_next_state
         next_state = state;
         case (state)
         IDLE: begin
-            if (ingress_pkt.tdata === 16'hAAAB) begin
+            if (sfd_received) begin
                 next_state = DST_MAC;
             end
         end
@@ -170,7 +172,8 @@ module input_fsm #(
 
     // Generate output
     assign incomplete_frame = state === FLUSH ? 1'b1 : 1'b0;
-    assign status.scan_frame   = frame_status_str[0];
+    assign status.scan_frame   = frame_status_str[0] | (sfd_received & ingress_pkt.tvalid);
+    //assign status.scan_frame   = frame_status_str[0];
     assign status.scan_dst_mac = frame_status_str[1];
     assign status.scan_src_mac = frame_status_str[2];
     assign status.scan_type    = frame_status_str[3];
@@ -268,7 +271,7 @@ module input_fsm #(
     // assert do not accept packets when not ready
     assertion_input_fsm_tready : assert property(
         @(posedge clk) disable iff (reset)
-        ~ingress_sink.tready |=> ~ingress_pkt.tvalid
+        ~ingress_sink.tready |-> ~ingress_pkt.tvalid
     ) else $error("Failed assertion");
 
     // assert input has a gap between frames
@@ -277,16 +280,28 @@ module input_fsm #(
         ingress_source.tlast & ingress_source.tvalid & ingress_sink.tready |=> ~ingress_source.tvalid
     ) else $error("Failed assertion");
 
-    // assert
+    // assert SFD is present
+    assertion_input_fsm_sfd : assert property(
+        @(posedge clk) disable iff (reset)
+        $rose(status.scan_frame) & ingress_pkt.tvalid |-> ingress_pkt.tdata === `ETH_SFD
+    ) else $error("Failed assertion");
 
-    // assert mask a dropped frame (do not broadcast frame status until tlast asserted)
+
 `ifdef VERILATOR
     logic current_frame_dropped;
     reg_set_clear r_current_frame_dropped
         (clk, reset, drop_current, ingress_source.tlast, current_frame_dropped);
+
+    // assert mask a dropped frame (do not broadcast frame status until tlast asserted)
     assertion_input_fsm_mask_dropped : assert property(
         @(posedge clk) disable iff (reset)
         current_frame_dropped |-> frame_status_str === FRAME_STATUS_IDLE || ingress_source.tlast
+    ) else $error("Failed assertion");
+
+    // assert output has valid frames
+    assertion_input_fsm_output_pkt : assert property(
+        @(posedge clk) disable iff (reset)
+        ~current_frame_dropped & $past(ingress_source.tvalid, 1) & ingress_sink.tready |-> ingress_pkt.tvalid && ($past(ingress_source.tdata, 1) === ingress_pkt.tdata)
     ) else $error("Failed assertion");
 `endif
 `endif

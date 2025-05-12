@@ -2,6 +2,14 @@
 `ifndef _FILTER_DEFS_SVH
 `define _FILTER_DEFS_SVH
 
+/* Integration testing setup. */
+
+`ifndef INTG_TESTING_1
+    `ifdef TOP_TESTING
+        `define INTG_TESTING_1
+    `endif
+`endif
+
 /* verilator lint_off UNPACKED */
 
 // Frame status broadcast in input filter

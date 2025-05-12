@@ -22,6 +22,7 @@ module frame_buffer #(
     input  logic         scan_frame,
     input  logic         drop_write,
     output logic         almost_full,
+    output logic [ADDR_WIDTH:0] frame_wptr,
 
     // read frame control
     input  logic         frame_ren,
@@ -36,7 +37,6 @@ module frame_buffer #(
     logic prev_scan_frame;
     logic frame_wen;
     logic [ADDR_WIDTH:0] frame_rst_wptr;
-    logic [ADDR_WIDTH:0] frame_wptr;
     logic [ADDR_WIDTH:0] next_frame_rptr;
     logic [19:0] frame_wdata;
     logic frame_full;

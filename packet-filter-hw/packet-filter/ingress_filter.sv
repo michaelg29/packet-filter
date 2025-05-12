@@ -26,7 +26,11 @@ module ingress_filter #(
 		output axis_sink_t   ingress_sink,
 
 		output axis_d_source_t egress_source,
-		input  axis_d_sink_t   egress_sink
+		input  axis_d_sink_t   egress_sink,
+
+		// status signals
+		output logic drop_write,
+		output logic timeout
 	);
 
     /*
@@ -59,7 +63,6 @@ if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
 end else begin: g_functional
 
     axis_source_t ingress_pkt;
-    logic drop_write;
     logic almost_full;
     frame_status status;
     dest_source_t frame_dest;
@@ -95,6 +98,7 @@ end else begin: g_functional
         .ingress_pkt(ingress_pkt),
         .drop_write(drop_write),
         .almost_full(almost_full),
+        .timeout(timeout),
         .egress_source(egress_source),
         .egress_sink(egress_sink)
     );

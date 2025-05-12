@@ -27,6 +27,7 @@ module request_buffer #(
 
     output logic drop_write,
     output logic almost_full,
+    output logic timeout,
 
     output axis_d_source_t egress_source,
 	input  axis_d_sink_t   egress_sink
@@ -83,6 +84,7 @@ module request_buffer #(
         .scan_frame(status.scan_frame),
         .drop_write(drop_write),
         .almost_full(frame_almost_full),
+        .frame_wptr(frame_wptr),
         .frame_ren(frame_ren),
         .frame_rrst(frame_rrst),
         .frame_rst_rptr(frame_rst_rptr),
@@ -100,6 +102,7 @@ module request_buffer #(
         .clk(clk),
         .reset(reset),
         .scan_payload(status.scan_payload),
+        .timeout(timeout),
         .sideband_rdata(sideband_rdata),
         .sideband_empty(sideband_empty),
         .sideband_ren(sideband_ren),
