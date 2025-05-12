@@ -49,7 +49,7 @@ module frame_receptor #(
     logic [7:0]  reg_file [0:6];
     logic [7:0] dstcheck;
     logic [31:0] checksum;
-    logic [15:0] input_counter;
+    logic [7:0] input_counter;
     logic [7:0] frame_counter;
 // generate
 // if (STUBBING == `STUBBING_PASSTHROUGH) begin: g_passthrough
@@ -80,7 +80,7 @@ module frame_receptor #(
         if (ingress_port_tlast) begin
             inter_frame_wait <= reg_file[6];
         end else if (inter_frame_wait > 0 && (input_counter == 0)) begin
-            inter_frame_wait <= inter_frame_wait - 1;
+            inter_frame_wait <= inter_frame_wait - 8'h01;
         end
     end
     // register read interface
@@ -90,7 +90,7 @@ module frame_receptor #(
                 readdata <= reg_file[address[2:0]];
             else if (address >= 7 && address <= 11)
                 case (address)
-                    7: : readdata <= dstcheck;
+                    7  : readdata <= dstcheck;
                     8  : readdata <= checksum[7:0];
                     9  : readdata <= checksum[15:8];
                     10 : readdata <= checksum[23:16];
@@ -112,30 +112,30 @@ module frame_receptor #(
             if(input_counter <= 2) begin
                 checksum <= 0;
                 dstcheck <= 0;
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter == 3) begin
                 if({reg_file[1], reg_file[0]} == ingress_port_tdata) begin
-                    dstcheck <= dstcheck + 1;
+                    dstcheck <= dstcheck + 8'h01;
                 end
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter == 4) begin
                 if({reg_file[3], reg_file[2]} == ingress_port_tdata) begin
-                    dstcheck <= dstcheck + 1;
+                    dstcheck <= dstcheck + 8'h01;
                 end
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter == 5) begin
                 if({reg_file[5], reg_file[4]} == ingress_port_tdata) begin
-                    dstcheck <= dstcheck + 1;
+                    dstcheck <= dstcheck + 8'h01;
                 end
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter >= 6 && input_counter <= 9) begin
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter >= 10 && !ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
-                input_counter <= input_counter + 1;
+                input_counter <= input_counter + 8'h01;
             end else if(input_counter >= 10 && ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
-                frame_counter <= frame_counter + 1;
+                frame_counter <= frame_counter + 8'h01;
                 input_counter <= 0;
             end
         end

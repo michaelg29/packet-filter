@@ -59,7 +59,7 @@ module frame_generator #(
     logic [15:0]  byte_counter;
     logic        sending;
     logic [7:0]  wait_counter;
-    logic [15:0] input_counter;
+    logic [7:0] input_counter;
     logic [7:0] frame_counter;
     //logic [15:0] type_temp;
     // register write interface
@@ -69,34 +69,24 @@ module frame_generator #(
                 reg_file[i] <= 8'h00;
             checksum <= 0;
             payload_byte <= 0;
-	    input_counter <= 0;
-	    //type_temp <= 0;
+	        input_counter <= 0;
         end else if (chipselect && write) begin
             if(input_counter <= 15) begin
                 reg_file[input_counter[4:0]] <= writedata;
-		input_counter <= input_counter + 1;
-            //end else if(input_counter == 12) begin
-		//type_temp[7:0] <= writedata;
-		//input_counter <= input_counter + 1;
-	    //end else if(input_counter == 13) begin
-		//type_temp[15:8] <= writedata;
-		//input_counter <= input_counter + 1;
+		        input_counter <= input_counter + 8'h01;
             end else if(input_counter >= 16) begin
-		//if(type_temp < 16'h05DC) begin
-		    //reg_file[12] <= type_temp[7:0];
-		   // reg_file[13] <= type_temp[15:8];
-		if({reg_file[13], reg_file[12]} != 0) begin
-		    if(input_counter < (16 + {reg_file[13], reg_file[12]})) begin
-		        if(!input_counter[0])
+		        if({reg_file[13], reg_file[12]} != 0) begin
+		            if(input_counter < (16 + {reg_file[13], reg_file[12]})) begin
+		                if(!input_counter[0])
                     	    payload_byte[7:0] <= writedata;
                     	else
                             payload_byte[15:8] <= writedata;
                         checksum <= checksum + {24'b0, writedata};
-		        input_counter <= input_counter + 1;
-		    end else begin
-		    	reg_file[16] <= writedata;
-		        input_counter <= 0;
-		    end	
+		                input_counter <= input_counter + 8'h01;
+		            end else begin
+		    	        reg_file[16] <= writedata;
+		                input_counter <= 0;
+		            end	
 		end else begin
 		    reg_file[16] <= writedata;
 	    	    input_counter <= 0;	
@@ -137,14 +127,14 @@ module frame_generator #(
             end
             else if (sending && egress_port_tready) begin
                 if(byte_counter >= (24 + {reg_file[13], reg_file[12]})) begin
-                    frame_counter <= frame_counter + 1;
+                    frame_counter <= frame_counter + 8'h01;
                     sending <= 0;
                     wait_counter <= reg_file[16];
                 end else
-		    byte_counter <= byte_counter + 2;
+		    byte_counter <= byte_counter + 7'h02;
             end
             else if(!sending && wait_counter > 0) begin
-                wait_counter <= wait_counter - 1;
+                wait_counter <= wait_counter - 8'h01;
             end
         end
     end
