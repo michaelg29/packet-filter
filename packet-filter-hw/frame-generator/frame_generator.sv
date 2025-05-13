@@ -59,7 +59,7 @@ module frame_generator #(
     logic [15:0]  byte_counter;
     logic        sending;
     logic [7:0]  wait_counter;
-    logic [7:0] input_counter;
+    //logic [7:0] input_counter;
     logic [7:0] frame_counter;
     //logic [15:0] type_temp;
     // register write interface
@@ -69,31 +69,24 @@ module frame_generator #(
                 reg_file[i] <= 8'h00;
             checksum <= 0;
             payload_byte <= 0;
-	        input_counter <= 0;
+	        //input_counter <= 0;
         end else if (chipselect && write) begin
-            if(input_counter <= 15) begin
-                reg_file[input_counter[4:0]] <= writedata;
-		        input_counter <= input_counter + 8'h01;
-            end else if(input_counter >= 16) begin
+            if(address <= 16) begin
+                reg_file[address[4:0]] <= writedata;
+            end else if(address > 16) begin
 		        if({reg_file[13], reg_file[12]} != 0) begin
-		            if(input_counter < (16 + {reg_file[13], reg_file[12]})) begin
-		                if(!input_counter[0])
+		            if(address < (17 + {reg_file[13], reg_file[12]})) begin
+		                if(!address[0])
                     	    payload_byte[7:0] <= writedata;
                     	else
                             payload_byte[15:8] <= writedata;
                         checksum <= checksum + {24'b0, writedata};
-		                input_counter <= input_counter + 8'h01;
-		            end else begin
-		    	        reg_file[16] <= writedata;
-		                input_counter <= 0;
-		            end	
-		end else begin
-		    reg_file[16] <= writedata;
-	    	    input_counter <= 0;	
-		end	            
-	    end
-        end	
-    end
+		            end
+                end
+            end
+		end          
+    end	
+
 
     // register read interface
     always_ff @(posedge clk) begin
@@ -146,12 +139,12 @@ module frame_generator #(
         egress_port_tdata = 16'h0000;
         if(sending) begin
             unique case (byte_counter)
-		//preamble
-		0  : egress_port_tdata = 16'hAAAA;
-		2  : egress_port_tdata = 16'hAAAA;
-		4  : egress_port_tdata = 16'hAAAA;
-		//preamble & sfd
-		6  : egress_port_tdata = 16'hAAAB;
+		        //preamble
+		        0  : egress_port_tdata = 16'hAAAA;
+		        2  : egress_port_tdata = 16'hAAAA;
+		        4  : egress_port_tdata = 16'hAAAA;
+		        //preamble & sfd
+		        6  : egress_port_tdata = 16'hAAAB;
                 //dst
                 8  : egress_port_tdata = {reg_file[0], reg_file[1]};
                 10  : egress_port_tdata = {reg_file[2], reg_file[3]};
@@ -166,13 +159,13 @@ module frame_generator #(
                 22 : egress_port_tdata = {reg_file[14], reg_file[15]};
                 default: begin
                     if(byte_counter >= 24) begin
-			if({reg_file[13], reg_file[12]} != 0) begin
-			    if(byte_counter < (24 + {reg_file[13], reg_file[12]}))			
+		                if({reg_file[13], reg_file[12]} != 0) begin
+			                if(byte_counter < (24 + {reg_file[13], reg_file[12]}))			
                             	egress_port_tdata = payload_byte;
-			end
-		    end
+			            end
+		            end
                 end
             endcase
-	end
+	    end
     end
 endmodule

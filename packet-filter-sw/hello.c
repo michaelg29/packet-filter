@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include "packet_filter.h"
 //#include "packet_switch.h"
-//#include "frame_generator.h"
-//#include "frame_receptor.h"
+#include "frame_generator.h"
+#include "frame_receptor.h"
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -46,7 +46,7 @@ void set_ingress_mask(int mask)
 int main()
 {
   packet_filter_arg_t packet_filter_vla;
-
+  
   printf("Userspace program started\n");
 
   if ( (packet_filter_fd = open("/dev/packet_filter", O_RDWR)) == -1) {
