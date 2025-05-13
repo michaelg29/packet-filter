@@ -58,7 +58,7 @@ add_fileset_file type_field_checker.sv SYSTEM_VERILOG PATH packet-filter/type_fi
 #
 # parameters
 #
-add_parameter STUBBING INTEGER 1
+add_parameter STUBBING INTEGER 0
 set_parameter_property STUBBING DEFAULT_VALUE 0
 set_parameter_property STUBBING DISPLAY_NAME STUBBING
 set_parameter_property STUBBING TYPE INTEGER

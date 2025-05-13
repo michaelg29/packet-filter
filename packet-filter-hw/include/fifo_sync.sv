@@ -17,7 +17,8 @@ module fifo_sync #(
     parameter ADDR_WIDTH = 11,
     parameter W_EL = 20,
     parameter NUM_CYCLONE_5CSEMA5_BLOCKS = 4,
-    parameter CAN_RESET_POINTERS = 0
+    parameter CAN_RESET_POINTERS = 0,
+    parameter RDATA_PIPELINE = 1
 ) (
     // clock and reset
     input  logic clk,
@@ -59,6 +60,7 @@ module fifo_sync #(
 
     // cursors
     logic [ADDR_WIDTH:0] next_rptr;
+    logic [ADDR_WIDTH:0] rptr_access;
     logic [ADDR_WIDTH:0] next_wptr;
     logic ptr_overlap;
     logic next_full, next_empty;
@@ -135,6 +137,14 @@ module fifo_sync #(
         end
     end
 
+    generate
+        if (RDATA_PIPELINE) begin: g_rptr_pipeline
+            assign rptr_access = rptr;
+        end else begin: g_rptr_no_pipeline
+            assign rptr_access = next_rptr;
+        end
+    endgenerate
+
     // generate each block of memory
     genvar mem_block_i;
     generate
@@ -146,7 +156,7 @@ module fifo_sync #(
                 if (mem_wvalid) begin
                     mem[wptr[ADDR_WIDTH-1:0]] <= wdata;
                 end
-                rdata <= mem[rptr[ADDR_WIDTH-1:0]];
+                rdata <= mem[rptr_access[ADDR_WIDTH-1:0]];
             end
         end else if (NUM_CYCLONE_5CSEMA5_BLOCKS == 1) begin: g_single_block
             logic [W_EL-1:0] mem [511:0];
@@ -156,7 +166,7 @@ module fifo_sync #(
                 if (mem_wvalid) begin
                     mem[wptr[8:0]] <= wdata;
                 end
-                rdata <= mem[rptr[8:0]];
+                rdata <= mem[rptr_access[8:0]];
             end
         end else begin: g_mult_blocks
             logic [W_EL-1:0] mem_rdata [NUM_CYCLONE_5CSEMA5_BLOCKS-1:0];
@@ -173,12 +183,12 @@ module fifo_sync #(
                     if (mem_block_wvalid) begin
                         mem[wptr[8:0]] <= wdata;
                     end
-                    mem_rdata[mem_block_i] <= mem[rptr[8:0]];
+                    mem_rdata[mem_block_i] <= mem[rptr_access[8:0]];
                 end
             end
 
             // select read output
-            assign rdata = mem_rdata[rptr[ADDR_WIDTH-1:9]];
+            assign rdata = mem_rdata[rptr_access[ADDR_WIDTH-1:9]];
         end
     endgenerate
 

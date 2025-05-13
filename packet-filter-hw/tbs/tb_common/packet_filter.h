@@ -58,13 +58,13 @@ void init_statistics_collection(eth_frame_t *frame) {
 
 void init_frame(eth_frame_t *frame, uint32_t dest, uint32_t preamble_packets, uint32_t payload_length, bool init_almost_full, uint32_t almost_full_wait, uint32_t drop_wait) {
 
-  frame->dst_mac[0] = 0;
+  frame->dst_mac[0] = 0x0fff;
   frame->dst_mac[1] = (uint16_t)(dest >> 16);
   frame->dst_mac[2] = (uint16_t)dest;
-  frame->src_mac[0] = 0;
-  frame->src_mac[1] = 0;
-  frame->src_mac[2] = 0;
-  frame->ethertype = 0;
+  frame->src_mac[0] = 0x0fff;
+  frame->src_mac[1] = 0x0eee;
+  frame->src_mac[2] = 0x0ddd;
+  frame->ethertype = payload_length;
 
   frame->preamble_bytes = preamble_packets << 1;
   frame->payload_length = payload_length & 0xfffffffe; // make payload_length even

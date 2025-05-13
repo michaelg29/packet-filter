@@ -1,22 +1,24 @@
 [*]
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
-[*] Mon May 12 17:16:16 2025
+[*] Tue May 13 01:04:00 2025
 [*]
 [dumpfile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/request_buffer.vcd"
-[dumpfile_mtime] "Mon May 12 17:12:12 2025"
-[dumpfile_size] 24864
+[dumpfile_mtime] "Tue May 13 00:51:02 2025"
+[dumpfile_size] 46152
 [savefile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/request_buffer.gtkw"
-[timestart] 339
+[timestart] 515
 [size] 1232 686
 [pos] -1 -1
-*-6.736699 500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.736699 600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.request_buffer.
+[treeopen] TOP.request_buffer.u_frame.
+[treeopen] TOP.request_buffer.u_frame.u_frame_fifo.
 [treeopen] TOP.request_buffer.u_sideband.
 [sst_width] 193
-[signals_width] 133
+[signals_width] 167
 [sst_expanded] 1
-[sst_vpaned_height] 222
+[sst_vpaned_height] 250
 @28
 TOP.request_buffer.clk
 TOP.request_buffer.reset
@@ -27,8 +29,19 @@ TOP.ingress_pkt.tvalid
 TOP.ingress_pkt.tlast
 @22
 TOP.ingress_pkt.tdata[15:0]
+@28
+TOP.request_buffer.u_frame.u_frame_fifo.wen
+@22
+TOP.request_buffer.u_frame.u_frame_fifo.wdata[19:0]
 @200
 -egress
+@28
+TOP.request_buffer.u_frame.u_frame_fifo.ren
+TOP.request_buffer.u_frame.u_frame_fifo.rrst
+@23
+TOP.request_buffer.u_frame.u_frame_fifo.rptr[11:0]
+@22
+TOP.request_buffer.u_frame.u_frame_fifo.rdata[19:0]
 @28
 TOP.egress_source.tvalid
 TOP.egress_source.tdest[1:0]
@@ -48,9 +61,8 @@ TOP.frame_dest.tdata[1:0]
 TOP.request_buffer.u_sideband.wen
 @22
 TOP.request_buffer.u_sideband.wdata[19:0]
-@29
-TOP.request_buffer.u_sideband.empty
 @28
+TOP.request_buffer.u_sideband.empty
 TOP.request_buffer.u_sideband.written
 TOP.request_buffer.u_sideband.ren
 @22

@@ -46,18 +46,16 @@ module switch_requester #(
     localparam INIT_FRAME_PTR = 3'b011; // set pointers in frame buffer
     localparam INIT_REQ       = 3'b001; // make request to switch
     localparam WRITE_FRAME    = 3'b101; // writing frame
-    localparam LAST_PACKET    = 3'b100; // last packet to write
 
     // State signals
     logic [2:0]                 state, next_state;
     logic [TIMEOUT_CTR_WIDTH:0] timeout_ctr;
     logic                       next_rptr_is_last;
+    logic                       first_req_next;
     logic                       first_req;
 
     // frame buffer control
-    logic                next_frame_ren;
     logic [ADDR_WIDTH:0] next_frame_rptr;
-    logic                prev_frame_ren;
     logic                first_frame_rrst;
     logic                prev_frame_rrst;
 
@@ -66,9 +64,13 @@ module switch_requester #(
 
     // egress control
     logic first_last;
+
+    // egress interface
+    logic tvalid;
     logic tlast;
-    logic egress_handshake_complete;
-    logic prev_egress_request;
+    logic [1:0] tdest;
+    logic [15:0] tdata;
+    logic tready;
 
     /* Save input data. */
 
@@ -76,14 +78,14 @@ module switch_requester #(
     always_ff @(posedge clk) begin
         if (reset) begin
             frame_rst_rptr <= '0;
-            egress_source.tdest <= '0;
+            tdest <= '0;
         end else begin
             if (first_sideband_ren) begin
                 frame_rst_rptr <= next_frame_rptr;
-                egress_source.tdest <= sideband_rdata[`AXIS_DEST_WIDTH-1:0];
+                tdest <= sideband_rdata[`AXIS_DEST_WIDTH-1:0];
             end else begin
                 frame_rst_rptr <= frame_rst_rptr;
-                egress_source.tdest <= egress_source.tdest;
+                tdest <= egress_source.tdest;
             end
         end
     end
@@ -92,12 +94,11 @@ module switch_requester #(
     always_ff @(posedge clk) begin
         if (reset) begin
             state <= IDLE;
-            prev_frame_ren <= 1'b0;
             timeout_ctr <= '0;
+            first_req <= 1'b0;
         end else begin
             state <= next_state;
-            prev_frame_ren <= frame_ren;
-            if (state === IDLE || egress_handshake_complete) begin
+            if (state === IDLE || egress_sink.tready) begin
                 // reset counter with no request or granted request
                 timeout_ctr <= '0;
             end else if (egress_source.tvalid & ~egress_sink.tready) begin
@@ -107,14 +108,11 @@ module switch_requester #(
                 // persist count if pausing a request
                 timeout_ctr <= timeout_ctr;
             end
+            first_req <= first_req_next;
         end
     end
 
     /* Generate next state. */
-
-    // egress handshake completion
-    assign prev_egress_request = ~egress_sink.tready & egress_source.tvalid;
-    assign egress_handshake_complete = egress_sink.tready & egress_source.tvalid;
 
     // find the boundary for the next frame
     assign next_frame_rptr = sideband_rdata[ADDR_WIDTH+`AXIS_DEST_WIDTH:`AXIS_DEST_WIDTH];
@@ -125,7 +123,7 @@ module switch_requester #(
         next_state = state;
         first_sideband_ren = 1'b0;
         first_frame_rrst = 1'b0;
-        first_req = 1'b0;
+        first_req_next = 1'b0;
         first_last = 1'b0;
         case (state)
         IDLE: begin
@@ -143,9 +141,9 @@ module switch_requester #(
         INIT_FRAME_PTR: begin
             // set pointers in frame FIFO
             // can start request when have begun receiving payload or there are more frames in the frame buffer (after read current sideband)
-            if (scan_payload | ~sideband_empty) begin
+            if (~frame_rrst & (scan_payload | ~sideband_empty)) begin
                 next_state = INIT_REQ;
-                first_req = 1'b1;
+                first_req_next = 1'b1;
             end
         end
         INIT_REQ: begin
@@ -160,17 +158,9 @@ module switch_requester #(
         WRITE_FRAME: begin
             // assert last when one more entry in the current frame
             if ((sideband_empty & frame_last_entry) | next_rptr_is_last) begin
-                next_state = LAST_PACKET;
+                //next_state = LAST_PACKET;
+                next_state = IDLE;
                 first_last = 1'b1;
-            end else if (timeout_ctr[TIMEOUT_CTR_WIDTH]) begin
-                // timeout request when counter overflows
-                next_state = IDLE;
-            end
-        end
-        LAST_PACKET: begin
-            // transition to IDLE after last handshake
-            if (egress_handshake_complete) begin
-                next_state = IDLE;
             end else if (timeout_ctr[TIMEOUT_CTR_WIDTH]) begin
                 // timeout request when counter overflows
                 next_state = IDLE;
@@ -186,12 +176,7 @@ module switch_requester #(
 
     // control frame read enable
     always_comb begin
-        // read frame buffer with initial request and every completed transaction
-        if (first_req || (egress_handshake_complete & (state !== LAST_PACKET))) begin
-            next_frame_ren = 1'b1;
-        end else begin
-            next_frame_ren = 1'b0;
-        end
+        frame_ren = ~reset & (tvalid & tready & ~first_last);
     end
 
     // control frame cursor reset
@@ -214,29 +199,28 @@ module switch_requester #(
     end
 
     // output generation
+    assign egress_source.tvalid = (state === INIT_REQ
+            || state == WRITE_FRAME
+        ) ? 1'b1 : 1'b0;
+    assign egress_source.tdata = frame_rdata[15:0];
+    assign egress_source.tdest = tdest;
+    assign egress_source.tlast = first_last | (tlast & ~tready);
     assign timeout = timeout_ctr[TIMEOUT_CTR_WIDTH];
     always_ff @(posedge clk) begin
         if (reset) begin
-            frame_ren <= 1'b0;
             sideband_ren <= 1'b0;
-            egress_source.tdata <= '0;
-            egress_source.tlast <= 1'b0;
+            tdata <= '0;
+            tlast <= 1'b0;
+            tready <= 1'b0;
         end else begin
-            frame_ren <= next_frame_ren;
             sideband_ren <= first_sideband_ren;
 
-            // latch read data
-            if (next_frame_ren) begin
-                egress_source.tdata <= frame_rdata[15:0];
-            end else begin
-                egress_source.tdata <= egress_source.tdata;
-            end
-
-            // assert tlast when going to or staying in LAST_PACKET state
-            egress_source.tlast <= (next_state === LAST_PACKET) ? 1'b1 : 1'b0;
+            tlast <= first_last;
 
             // valid when read from FIFO or previous request not granted
-            egress_source.tvalid <= (first_req || next_frame_ren || prev_egress_request) && ~timeout_ctr[TIMEOUT_CTR_WIDTH];
+            tvalid <= (first_req || frame_ren || (~tready & egress_source.tvalid)) && ~timeout_ctr[TIMEOUT_CTR_WIDTH];
+
+            tready <= egress_sink.tready;
         end
     end
 

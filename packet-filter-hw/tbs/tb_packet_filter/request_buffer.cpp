@@ -31,6 +31,7 @@ void tick(int half_cycles, int tready) {
       dut->frame_dest = { 0, 0, 0 }; // data, valid, user
       dut->ingress_pkt = { tdata, frame.valid, frame.last }; // data, valid, last
       dut->egress_sink = { tready }; // tready
+      //std::cout << "Set tdata to " << tdata << ", scan_frame is " << frame.status.a[0] << " or " << frame.status.s.scan_frame << std::endl;
     }
 
     // tick
@@ -49,16 +50,19 @@ void tick(int half_cycles, int tready) {
 
 
 void send_frame(bool type_valid, uint32_t dest, bool dest_valid, uint32_t ready_delay) {
+  uint16_t tdata;
   while (true) {
     // toggle clock
     dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
     if (!dut->clk && last_clock) {
+      tdata = get_tdata(&frame);
       dut->status = { frame.status.a[0], frame.status.a[1], frame.status.a[2], frame.status.a[3], frame.status.a[4] }; // scan_frame, dst_mac, src_mac, type, payload
       dut->frame_type = { frame.status.a[3], !type_valid }; // valid, user
       dut->frame_dest = { dest, frame.status.a[2], !dest_valid }; // data, valid, user
-      dut->ingress_pkt = { get_tdata(&frame), 1, frame.last }; // data, valid, last
+      dut->ingress_pkt = { tdata, 1, frame.last }; // data, valid, last
       dut->egress_sink = { ready_delay == 0 }; // tready
+      //std::cout << "Set tdata to " << tdata << ", scan_frame is " << frame.status.a[0] << " or " << frame.status.s.scan_frame << std::endl;
     }
 
     // tick
@@ -114,6 +118,18 @@ int main(int argc, const char ** argv, const char ** env) {
 
   init_frame(&frame, 1, 11, 50, false, 0, 0);
   send_frame(true, 1, true, 6);
+
+  tick(80, 1);
+  tick(32, 0);
+
+  init_frame(&frame, 2, 11, 50, false, 0, 0);
+  send_frame(false, 2, true, 6);
+
+  tick(80, 1);
+  tick(32, 0);
+
+  init_frame(&frame, 3, 11, 50, false, 0, 0);
+  send_frame(true, 3, true, 6);
 
   tick(80, 1);
   tick(32, 0);

@@ -37,6 +37,7 @@ module frame_buffer #(
     // ingress frame control
     logic prev_scan_frame;
     logic frame_wen;
+    logic frame_wrst;
     logic [ADDR_WIDTH:0] frame_rst_wptr;
     logic [ADDR_WIDTH:0] next_frame_rptr;
     logic [19:0] frame_wdata;
@@ -49,10 +50,14 @@ module frame_buffer #(
 
     // Register logic
     always_ff @(posedge clk) begin
+        frame_wdata[19:16] <= 4'b0;
         if (reset) begin
-            prev_scan_frame <= 1'b0;
-            frame_rst_wptr  <= '0;
-            almost_full     <= 1'b0;
+            prev_scan_frame   <= 1'b0;
+            frame_rst_wptr    <= '0;
+            almost_full       <= 1'b0;
+            frame_wdata[15:0] <= '0;
+            frame_wen         <= 1'b0;
+            frame_wrst        <= 1'b0;
         end else begin
             // Frame start logic
             prev_scan_frame <= scan_frame;
@@ -64,13 +69,19 @@ module frame_buffer #(
 
             // Capacity logic
             almost_full <= next_almost_full;
-            last_entry  <= next_last_entry;
+            //last_entry  <= next_last_entry;
+
+            // write logic
+            frame_wdata[15:0] <= ingress_pkt.tdata;
+            frame_wen <= ingress_pkt.tvalid & scan_frame & ~drop_write;
+            frame_wrst <= drop_write;
         end
     end
 
     // Capacity logic
     assign next_frame_rptr = frame_rptr + 1;
-    assign next_last_entry = (next_frame_rptr === frame_wptr) ? 1'b1 : 1'b0;
+    //assign next_last_entry = (next_frame_rptr === frame_wptr) ? 1'b1 : 1'b0;
+    assign last_entry = (next_frame_rptr === frame_wptr) ? 1'b1 : 1'b0;
     assign frame_ptr_diff = frame_wptr - frame_rptr;
     always_comb begin
 `ifdef VERILATOR
@@ -94,13 +105,12 @@ module frame_buffer #(
      *
      * TODO: add parity bits to pad 16-bit streaming words to 20-bit memory words
      */
-    assign frame_wen = ingress_pkt.tvalid & scan_frame;
-    assign frame_wdata = {4'b0, ingress_pkt.tdata};
     fifo_sync #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .W_EL(20),
         .NUM_CYCLONE_5CSEMA5_BLOCKS(NUM_CYCLONE_5CSEMA5_BLOCKS),
-        .CAN_RESET_POINTERS(1)
+        .CAN_RESET_POINTERS(1),
+        .RDATA_PIPELINE(0)
     ) u_frame_fifo (
         .clk      (clk),
         .reset    (reset),
@@ -113,7 +123,7 @@ module frame_buffer #(
         .wen      (frame_wen),      // from switch FSM
         .full     (frame_full),
         .rrst     (frame_rrst),     //
-        .wrst     (drop_write),     //
+        .wrst     (frame_wrst),     //
         .rst_rptr (frame_rst_rptr), // from switch FSM
         .rst_wptr (frame_rst_wptr), // from switch FSM
         .rptr     (frame_rptr),     // to switch FSM
@@ -170,7 +180,7 @@ module frame_buffer #(
 
     assertion_frame_buffer_last_entry : assert property(
         @(posedge clk) disable iff (reset)
-        (size === 1) |=> last_entry
+        (size === 1) |-> last_entry
     ) else $error("Failed assertion");
 `endif
 `endif
