@@ -97,7 +97,7 @@ int main()
     return -1;
   }
 
-  if ( (packet_filter_fd = open("/dev/frame_generator0", O_RDWR)) == -1) {
+  if ( (frame_generator_0_fd = open("/dev/frame_generator_0", O_RDWR)) == -1) {
     fprintf(stderr, "could not open /dev/frame_generator0\n");
     return -1;
   }

@@ -11,9 +11,9 @@
 #include <linux/of_address.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include "frame_generator.h"
+#include "frame_generator_0.h"
 
-#define DRIVER_NAME "frame_generator0"
+#define DRIVER_NAME "frame_generator_0"
 #define MAX_PAYLOAD_SIZE 100
 //#define NUM_GENERATORS 4
 /* Device registers */
@@ -45,6 +45,7 @@ struct frame_generator_dev {
     void __iomem *virtbase;
     packet_data_info_t data;
     packet_payload_t payload;
+    frame_generator_read_t readdata;
 } dev;
 
 //static frame_generator_dev devs[NUM_GENERATORS];
@@ -96,18 +97,16 @@ static long frame_generator_ioctl(struct file *f, unsigned int cmd, unsigned lon
             writePayload(&vla.payload);
             break;
         case FRAME_READ_CHECKSUM_0:
-            if(copy_from_user(&vla, (frame_generator_arg_t *)arg, sizeof(frame_generator_arg_t)))
-                return -EACCES;
             vla.readdata.checksum_0 = ioread8(checksum_0(dev.virtbase));
             vla.readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
             vla.readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
             vla.readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
+            if(copy_to_user(&vla, (frame_generator_arg_t *)arg, sizeof(frame_generator_arg_t)))
+                return -EACCES;
             break;
-
         default:
             return -EINVAL;
     }
-
     return 0;
 }
 
@@ -128,7 +127,7 @@ static int __init frame_generator_probe(struct platform_device *pdev)
     packet_payload_t payload = 0;
 	int ret;
 
-	/* Register ourselves as a misc device: creates /dev/frame_generator0 */
+	/* Register ourselves as a misc device: creates /dev/frame_generator_0 */
 	ret = misc_register(&frame_generator_misc_device);
 
 	/* Get the address of our registers from the device tree */
@@ -211,7 +210,7 @@ module_init(frame_generator_init);
 module_exit(frame_generator_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("PacketFilter group");
+MODULE_AUTHOR("frameGenerator group");
 MODULE_DESCRIPTION("frame generator 0 driver");
 
 

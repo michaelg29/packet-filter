@@ -20,7 +20,7 @@ typedef struct {
     uint8_t length_0;
     uint8_t length_1;
     uint8_t type_0;
-    uint8_t type_2;
+    uint8_t type_1;
     uint8_t frame_wait;
 } packet_data_info_t;
 
