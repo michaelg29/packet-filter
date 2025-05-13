@@ -13,7 +13,7 @@
 #include <linux/uaccess.h>
 #include "frame_generator.h"
 
-#define DRIVER_NAME "frame_generator"
+#define DRIVER_NAME "frame_generator1"
 #define MAX_PAYLOAD_SIZE 100
 //#define NUM_GENERATORS 4
 /* Device registers */
@@ -85,24 +85,23 @@ static void writePayload(packet_payload_t *payload) {
 }
 
 static long frame_generator_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
-    frame_generator_write_t vla;
-    frame_generator_read_t vlar;
+    frame_generator_arg_t vla;
     pr_info("ioctl %d\n", cmd);
 
     switch(cmd){
-        case FRAME_WRITE_PACKET:
-            if(copy_from_user(&vla, (frame_generator_write_t *)arg, sizeof(frame_generator_write_t)))
+        case FRAME_WRITE_PACKET_1:
+            if(copy_from_user(&vla, (frame_generator_arg_t *)arg, sizeof(frame_generator_arg_t)))
                 return -EACCES;
             writePacketInfo(&vla.writedata);
             writePayload(&vla.payload);
             break;
-        case FRAME_READ_CHECKSUM:
-            if(copy_from_user(&vlar, (frame_generator_read_t *)arg, sizeof(frame_generator_read_t)))
+        case FRAME_READ_CHECKSUM_1:
+            if(copy_from_user(&vla, (frame_generator_arg_t *)arg, sizeof(frame_generator_arg_t)))
                 return -EACCES;
-            vlar.checksum_0 = ioread8(checksum_0(dev.virtbase));
-            vlar.checksum_1 = ioread8(checksum_1(dev.virtbase));
-            vlar.checksum_2 = ioread8(checksum_2(dev.virtbase));
-            vlar.checksum_3 = ioread8(checksum_3(dev.virtbase));
+            vla.readdata.checksum_0 = ioread8(checksum_0(dev.virtbase));
+            vla.readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
+            vla.readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
+            vla.readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
             break;
 
         default:
@@ -129,7 +128,7 @@ static int __init frame_generator_probe(struct platform_device *pdev)
     packet_payload_t payload = 0;
 	int ret;
 
-	/* Register ourselves as a misc device: creates /dev/frame_generator */
+	/* Register ourselves as a misc device: creates /dev/frame_generator0 */
 	ret = misc_register(&frame_generator_misc_device);
 
 	/* Get the address of our registers from the device tree */
@@ -213,6 +212,4 @@ module_exit(frame_generator_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("PacketFilter group");
-MODULE_DESCRIPTION("frame generator driver");
-
-
+MODULE_DESCRIPTION("frame generator 1 driver");

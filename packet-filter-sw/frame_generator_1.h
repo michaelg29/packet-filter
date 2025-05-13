@@ -1,5 +1,5 @@
-#ifndef _FRAME_GENERATOR_H
-#define _FRAME_GENERATOR_H
+#ifndef _FRAME_GENERATOR_1_H
+#define _FRAME_GENERATOR_1_H
 
 #include <linux/ioctl.h>
 #include <stdint.h>
@@ -31,7 +31,8 @@ typedef struct {
 typedef union {
     packet_data_info_t writedata;
     packet_payload_t payload;
-} frame_generator_write_t;
+    frame_generator_read_t readdata;
+} frame_generator_arg_t;
 
 typedef struct {
     uint8_t checksum_0;
@@ -44,5 +45,5 @@ typedef struct {
 
 #define FRAME_GENERATOR_MAGIC 'q'
 
-#define PACKET_WRITE _IOW(FRAME_GENERATOR_MAGIC, 1, frame_generator_write_t)
-#define REG_READ     _IOR(FRAME_GENERATOR_MAGIC, 2, frame_generator_read_t)
+#define FRAME_WRITE_PACKET_1 _IOW(FRAME_GENERATOR_MAGIC, 1, frame_generator_arg_t)
+#define FRAME_READ_CHECKSUM_1 _IOR(FRAME_GENERATOR_MAGIC, 2, frame_generator_arg_t)
