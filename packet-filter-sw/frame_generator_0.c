@@ -79,9 +79,10 @@ static void writePacketInfo(packet_data_info_t *writedata) {
 static void writePayload(packet_payload_t *payload) {
     void __iomem *addr;
     uint16_t length = ((uint16_t)dev.data.length_1 << 8) | dev.data.length_0;
-    for(int i = 0; i < length; i++)
+    for(int i = 0; i < length; i++) {
         addr = payload(dev.virtbase) + i;
         iowrite8(payload->data[i], addr);
+    }
     dev.payload = *payload;
 }
 
@@ -124,7 +125,7 @@ static struct miscdevice frame_generator_misc_device = {
 static int __init frame_generator_probe(struct platform_device *pdev)
 {
     packet_data_info_t writedata = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    packet_payload_t payload = 0;
+    packet_payload_t payload = {0};
 	int ret;
 
 	/* Register ourselves as a misc device: creates /dev/frame_generator_0 */

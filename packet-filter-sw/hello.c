@@ -98,7 +98,7 @@ int main()
   }
 
   if ( (frame_generator_0_fd = open("/dev/frame_generator_0", O_RDWR)) == -1) {
-    fprintf(stderr, "could not open /dev/frame_generator0\n");
+    fprintf(stderr, "could not open /dev/frame_generator_0\n");
     return -1;
   }
 

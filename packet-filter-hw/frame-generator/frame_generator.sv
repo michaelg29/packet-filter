@@ -75,7 +75,7 @@ module frame_generator #(
                 reg_file[address[4:0]] <= writedata;
             end else if(address > 16) begin
 		        if({reg_file[13], reg_file[12]} != 0) begin
-		            if(address <= (17 + {reg_file[13], reg_file[12]})) begin
+		            if({8'h00,address} <= (17 + {reg_file[13], reg_file[12]})) begin
 		                if(!address[0])
                     	    payload_byte[7:0] <= writedata;
                     	else
@@ -124,7 +124,7 @@ module frame_generator #(
                     sending <= 0;
                     wait_counter <= reg_file[16];
                 end else
-		    byte_counter <= byte_counter + 7'h02;
+		    byte_counter <= byte_counter + 16'h02;
             end
             else if(!sending && wait_counter > 0) begin
                 wait_counter <= wait_counter - 8'h01;
