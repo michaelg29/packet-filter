@@ -1,5 +1,5 @@
 
-MODULE = packet_filter
+MODULE ?= packet_filter
 MAIN = hello
 
 ifneq (${KERNELRELEASE},)

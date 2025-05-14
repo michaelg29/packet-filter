@@ -2,7 +2,10 @@
 #define _FRAME_GENERATOR_0_H
 
 #include <linux/ioctl.h>
-#include <stdint.h>
+//#include <stdint.h>
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
 
 typedef struct {
     uint8_t dst_0;
@@ -25,7 +28,7 @@ typedef struct {
 } packet_data_info_t;
 
 typedef struct {
-    uint8_t data[100];
+    uint8_t data[100][8];
 } packet_payload_t;
 
 typedef struct {

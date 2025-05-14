@@ -79,7 +79,8 @@ static void writePacketInfo(packet_data_info_t *writedata) {
 static void writePayload(packet_payload_t *payload) {
     void __iomem *addr;
     uint16_t length = ((uint16_t)dev.data.length_1 << 8) | dev.data.length_0;
-    for(int i = 0; i < length; i++) {
+    int i = 0
+    for(; i < length; i++) {
         addr = payload(dev.virtbase) + i;
         iowrite8(payload->data[i], addr);
     }
@@ -102,7 +103,7 @@ static long frame_generator_ioctl(struct file *f, unsigned int cmd, unsigned lon
             vla.readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
             vla.readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
             vla.readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
-            if(copy_to_user(&vla, (frame_generator_arg_t *)arg, sizeof(frame_generator_arg_t)))
+            if(copy_to_user((frame_generator_arg_t *)arg, &vla, sizeof(frame_generator_arg_t)))
                 return -EACCES;
             break;
         default:

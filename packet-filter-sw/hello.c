@@ -82,7 +82,7 @@ int main()
   input.writedata.src_4 = 0;
   input.writedata.src_5 = 0;
 
-  input.writedata.length_0 = 1;
+  input.writedata.length_0 = 2;
   input.writedata.length_1 = 0;
   input.writedata.type_0 = 0;
   input.writedata.type_1 = 0;
@@ -90,6 +90,8 @@ int main()
   input.writedata.frame_wait = 10;
 
   input.payload.data[0] = 10;
+  
+  input.payload.data[1] = 10;
   printf("Userspace program started\n");
 
   if ( (packet_filter_fd = open("/dev/packet_filter", O_RDWR)) == -1) {
