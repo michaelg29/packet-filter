@@ -43,11 +43,11 @@
 
 `timescale 1 ps / 1 ps
 module packet_filter #(
-        parameter STUBBING = `STUBBING_PASSTHROUGH,
-        parameter ALMOST_FULL_THRESHOLD = 10,
+        parameter STUBBING = `STUBBING_FUNCTIONAL,
+        parameter ALMOST_FULL_THRESHOLD = 760,
         parameter ADDR_WIDTH = 11,
         parameter NUM_CYCLONE_5CSEMA5_BLOCKS = 4,
-        parameter TIMEOUT_CTR_WIDTH = 3
+        parameter TIMEOUT_CTR_WIDTH = 9
     ) (
 		input  wire        clk,                   //                   clock.clk
 		input  wire        reset,                 //                   reset.reset
