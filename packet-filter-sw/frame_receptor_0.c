@@ -13,7 +13,7 @@
 #include <linux/uaccess.h>
 #include "frame_receptor.h"
 
-#define DRIVER_NAME "frame_receptor"
+#define DRIVER_NAME "frame_receptor_0"
 //#define NUM_RECEPTORS 4
 /* Device registers */
 #define dst_0(x) ((x)+0)
@@ -58,19 +58,19 @@ static long frame_receptor_ioctl(struct file *f, unsigned int cmd, unsigned long
     pr_info("ioctl %d\n", cmd);
 
     switch(cmd){
-        case RECEPTOR_WRITE:
+        case RECEPTOR_WRITE_0:
             if(copy_from_user(&vla, (frame_receptor_write_t *)arg, sizeof(frame_receptor_write_t)))
                 return -EACCES;
             writeReceptorInfo(&vla.writedata);
             break;
-        case RECEPTOR_READ:
-            if(copy_from_user(&vlar, (frame_receptor_read_t *)arg, sizeof(frame_receptor_read_t)))
+        case RECEPTOR_READ_0:
+		    vla.readdata.dstCheck = ioread8(dstCheck_0(dev.virtbase));   
+            vla.readdata.checksum_0 = ioread8(checksum_0(dev.virtbase));
+            vla.readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
+            vla.readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
+            vla.readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
+            if(copy_to_user((frame_receptor_read_t *)arg, &vla, sizeof(frame_receptor_read_t)))
                 return -EACCES;
-            vlar->readdata.dstCheck = ioread8(checksum_0(dev.virtbase));   
-            vlar->readdata.checksum_0 = ioread8(checksum_0(dev.virtbase));
-            vlar->readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
-            vlar->readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
-            vlar->readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
             break;
 
         default:
@@ -122,7 +122,6 @@ static int __init frame_receptor_probe(struct platform_device *pdev)
 
 	/* Set initial values */
 	writePacketInfo(&writedata);
-    writePayload(&payload);
 
 	return 0;
 
@@ -179,7 +178,7 @@ module_init(frame_receptor_init);
 module_exit(frame_receptor_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("PacketFilter group");
-MODULE_DESCRIPTION("frame receptor driver");
+MODULE_AUTHOR("framereceptor group");
+MODULE_DESCRIPTION("frame receptor 0 driver");
 
 

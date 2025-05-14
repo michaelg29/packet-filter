@@ -10,7 +10,7 @@
 #include "packet_filter.h"
 //#include "packet_switch.h"
 #include "frame_generator_0.h"
-//#include "frame_receptor.h"
+#include "frame_receptor_0.h"
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -20,6 +20,7 @@
 
 int packet_filter_fd;
 int frame_generator_0_fd;
+int frame_receptor_0_fd;
 /* Read and print the mask */
 void print_ingress_mask() {
   packet_filter_arg_t vla;
@@ -64,6 +65,29 @@ void read_checksum_0(frame_generator_arg_t input) {
   printf("Checksum: 0x%08x\n", checksum);
 }
 
+void write_receptor_data_0(frame_receptor_arg_t receptorDST){
+  frame_receptor_arg_t vla = receptorDST;
+  if(ioctl(frame_generator_0_fd, RECEPTOR_WRITE_0, &vla)) {
+    perror("ioctl(RECEPTOR_WRITE_0) failed");
+    return;
+  }
+}
+
+void read_receptorChecksum_0(frame_receptor_arg_t input) {
+  frame_receptor_arg_t vla = input;
+  if(ioctl(frame_generator_0_fd, RECEPTOR_READ_0, &vla)) {
+    perror("ioctl(RECEPTOR_READ_0) failed");
+    return;
+  }
+  uint8_t dstCheck = (vla.readdata.dstCheck);
+  printf("dstCheck: 0x%08x\n", dstCheck);
+  uint32_t checksum = (vla.readdata.checksum_3 << 24) |
+                    (vla.readdata.checksum_2 << 16) |
+                    (vla.readdata.checksum_1 << 8) |
+                    (vla.readdata.checksum_0);
+  printf("Checksum: 0x%08x\n", checksum);
+}
+
 int main()
 {
   packet_filter_arg_t packet_filter_vla;
@@ -90,8 +114,17 @@ int main()
   input.writedata.frame_wait = 10;
 
   input.payload.data[0] = 10;
-  
   input.payload.data[1] = 10;
+
+  frame_receptor_arg_t receptorDST;
+  receptorDST.writedata.dst_0 = 0;
+  receptorDST.writedata.dst_1 = 0;
+  receptorDST.writedata.dst_2 = 0;
+  receptorDST.writedata.dst_3 = 0;
+  receptorDST.writedata.dst_4 = 0;
+  receptorDST.writedata.dst_5 = 0;
+  receptorDST.writedata.inter_frame_wait = 10;
+
   printf("Userspace program started\n");
 
   if ( (packet_filter_fd = open("/dev/packet_filter", O_RDWR)) == -1) {
@@ -104,6 +137,11 @@ int main()
     return -1;
   }
 
+  if ( (frame_receptor_0_fd = open("/dev/frame_receptor_0", O_RDWR)) == -1) {
+    fprintf(stderr, "could not open /dev/frame_receptor_0\n");
+    return -1;
+  }
+
   printf("initial state: ");
 
   print_ingress_mask();
@@ -112,6 +150,8 @@ int main()
 
   write_packet_0(input);
   read_checksum_0(input);
+  write_receptor_data_0(receptorDST);
+  read_receptorChecksum_0(receptorDST);
   printf("Userspace program terminating\n");
   return 0;
 }
