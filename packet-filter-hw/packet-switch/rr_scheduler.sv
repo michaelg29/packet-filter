@@ -38,7 +38,7 @@ module rr_scheduler #(
 
     logic found;
 
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             state    <= IDLE;
             next_rr  <= '0;

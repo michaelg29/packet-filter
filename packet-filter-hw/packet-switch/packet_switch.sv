@@ -13,11 +13,6 @@ module packet_switch #(
     input  wire              clk,
     input  wire              reset,
 
-// ** Error: /homes/user/stud/fall24/ag5016/Embedded_Systems/packet_switch.sv(8): (vlog-2163) Macro `STUBBING_PASSTHROUGH is undefined.
-// ** Error: (vlog-13069) /homes/user/stud/fall24/ag5016/Embedded_Systems/packet_switch.sv(8): near ",": syntax error, unexpected ','.
-// ** Error: /homes/user/stud/fall24/ag5016/Embedded_Systems/packet_switch.sv(91): (vlog-2163) Macro `STUBBING_PASSTHROUGH is undefined.
-
-
     // Avalon-MM register interface
     input  wire [31:0]        writedata,
     input  wire              write,
@@ -80,12 +75,12 @@ module packet_switch #(
     //  register mask at address 0
     // ///////////////////////////////
     logic [N_PORTS-1:0] egress_mask;
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset)                      egress_mask <= '0;
         else if (chipselect && write && address == 8'h0)
                                         egress_mask <= writedata[N_PORTS-1:0];
     end
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset)                      readdata <= 32'h00;
         else if (chipselect && read && address == 8'h0)
                                         readdata <= {{32-N_PORTS{1'b0}}, egress_mask};

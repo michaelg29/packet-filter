@@ -13,6 +13,7 @@ VLOG_GENERICS ?=
 INCLUDE_FLAG = -I../../include
 ifdef SYS_PORTION
 	INCLUDE_FLAG += -I../../$(SYS_PORTION)
+	INCLUDE_FLAG += -I../../packet-filter
 endif
 
 VERILATOR_WARN_FLAGS = -Wno-DECLFILENAME -Wno-UNUSED
