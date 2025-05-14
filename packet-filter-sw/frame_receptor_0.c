@@ -58,17 +58,17 @@ static long frame_receptor_ioctl(struct file *f, unsigned int cmd, unsigned long
 
     switch(cmd){
         case RECEPTOR_WRITE_0:
-            if(copy_from_user(&vla, (frame_receptor_write_t *)arg, sizeof(frame_receptor_write_t)))
+            if(copy_from_user(&vla, (frame_receptor_arg_t *)arg, sizeof(frame_receptor_arg_t)))
                 return -EACCES;
             writeReceptorInfo(&vla.writedata);
             break;
         case RECEPTOR_READ_0:
-		    vla.readdata.dstCheck = ioread8(dstCheck_0(dev.virtbase));   
+		    vla.readdata.dstCheck   = ioread8(dstCheck(dev.virtbase));   
             vla.readdata.checksum_0 = ioread8(checksum_0(dev.virtbase));
             vla.readdata.checksum_1 = ioread8(checksum_1(dev.virtbase));
             vla.readdata.checksum_2 = ioread8(checksum_2(dev.virtbase));
             vla.readdata.checksum_3 = ioread8(checksum_3(dev.virtbase));
-            if(copy_to_user((frame_receptor_read_t *)arg, &vla, sizeof(frame_receptor_read_t)))
+            if(copy_to_user((frame_receptor_arg_t *)arg, &vla, sizeof(frame_receptor_arg_t)))
                 return -EACCES;
             break;
 

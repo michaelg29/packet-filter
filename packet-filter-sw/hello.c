@@ -67,7 +67,7 @@ void read_checksum_0(frame_generator_arg_t input) {
 
 void write_receptor_data_0(frame_receptor_arg_t receptorDST){
   frame_receptor_arg_t vla = receptorDST;
-  if(ioctl(frame_generator_0_fd, RECEPTOR_WRITE_0, &vla)) {
+  if(ioctl(frame_receptor_0_fd, RECEPTOR_WRITE_0, &vla)) {
     perror("ioctl(RECEPTOR_WRITE_0) failed");
     return;
   }
@@ -75,7 +75,7 @@ void write_receptor_data_0(frame_receptor_arg_t receptorDST){
 
 void read_receptorChecksum_0(frame_receptor_arg_t input) {
   frame_receptor_arg_t vla = input;
-  if(ioctl(frame_generator_0_fd, RECEPTOR_READ_0, &vla)) {
+  if(ioctl(frame_receptor_0_fd, RECEPTOR_READ_0, &vla)) {
     perror("ioctl(RECEPTOR_READ_0) failed");
     return;
   }
@@ -147,10 +147,9 @@ int main()
   print_ingress_mask();
   set_ingress_mask(0xf);
   print_ingress_mask();
-
+  write_receptor_data_0(receptorDST);
   write_packet_0(input);
   read_checksum_0(input);
-  write_receptor_data_0(receptorDST);
   read_receptorChecksum_0(receptorDST);
   printf("Userspace program terminating\n");
   return 0;
