@@ -1,14 +1,12 @@
 // packet_switch.sv
 `include "../include/packet_filter.svh"
-`include "../packet-switch/rr_scheduler.sv"
-`include "../packet-switch/mux4to1.sv"
 `timescale 1 ps / 1 ps
 
 module packet_switch #(
     parameter N_PORTS    = 4,
     parameter DATA_WIDTH = 16,
-    parameter IDX_WIDTH  = $clog2(N_PORTS)
-   // parameter STUBBING   = `STUBBING_PASSTHROUGH
+    parameter IDX_WIDTH  = 2,
+    parameter STUBBING   = `STUBBING_FUNCTIONAL
 )(
     input  wire              clk,
     input  wire              reset,
@@ -106,9 +104,9 @@ generate
     logic                         sched_val      [N_PORTS-1:0];
     logic                         sched_last     [N_PORTS-1:0];
     logic [N_PORTS-1:0]           sched_grant    [N_PORTS-1:0];
-    logic [N_PORTS-1:0]           sched_ing_rdy  [N_PORTS-1:0][N_PORTS-1:0];
+    logic [N_PORTS-1:0]           sched_ing_rdy  [N_PORTS-1:0];
 
-    // Build ingress arrays from topâlevel ports
+    // Build ingress arrays from top-level ports
 
 
     assign ingress_src[0].tdata  = ingress_port_0_tdata;
@@ -132,7 +130,7 @@ generate
     assign ingress_src[3].tlast  = ingress_port_3_tlast;
 
 
-    // Handshake backâpressure from schedulers into ingress sinks
+    // Handshake back-pressure from schedulers into ingress sinks
     // (we OR across all egress schedulers)
     genvar i;
     for (i = 0; i < N_PORTS; i++) begin : R_IN_SINK
@@ -143,7 +141,7 @@ generate
               sched_ing_rdy[3][i]};
     end
 
-    // Expose those backâpressure bits to the topâlevel I/O
+    // Expose those back-pressure bits to the toplevel I/O
     assign ingress_port_0_tready = ingress_sink[0].tready;
     assign ingress_port_1_tready = ingress_sink[1].tready;
     assign ingress_port_2_tready = ingress_sink[2].tready;
@@ -166,7 +164,7 @@ generate
 
     // Instantiate rr_scheduler + mux4to1 for each egress port
     for (i = 0; i < N_PORTS; i++) begin : SCHED_AND_MUX
-        // RoundâRobin arbiter picks one ingress for this egress
+        // RoundRobin arbiter picks one ingress for this egress
         rr_scheduler #(
             .N_PORTS   (N_PORTS),
             .IDX_WIDTH (IDX_WIDTH)
@@ -185,7 +183,7 @@ generate
             .ingress_ready   (sched_ing_rdy[i])
         );
 
-        // Crossâbar: pick data from the winning ingress
+        // Cross-bar: pick data from the winning ingress
         mux4to1 #(
             .N_PORTS    (N_PORTS),
             .DATA_WIDTH (DATA_WIDTH),
@@ -206,7 +204,7 @@ generate
         assign egress_src[i].tlast  = sched_last[i];
     end
 
-    // Finally, route each egress_src into the topâlevel egress_port_X_
+    // Finally, route each egress_src into the top-level egress_port_X_
     assign egress_port_0_tvalid = egress_src[0].tvalid;
     assign egress_port_0_tdata  = egress_src[0].tdata;
     assign egress_port_0_tlast  = egress_src[0].tlast;

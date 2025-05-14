@@ -36,7 +36,6 @@ module rr_scheduler #(
     logic [IDX_WIDTH-1:0] next_rr, next_rr_next;
     logic [IDX_WIDTH-1:0] select, select_next;
 
-    integer i;
     logic found;
 
     always_ff @(posedge clk or posedge reset) begin
@@ -82,6 +81,14 @@ module rr_scheduler #(
         end
     end
 
+    // generate in-order indices (with wrap-around)
+    logic [IDX_WIDTH-1:0] idx [N_PORTS-1:0];
+    always_comb begin
+        for (int i = 0; i < N_PORTS; i++) begin
+            idx[i] = next_rr + i[IDX_WIDTH-1:0];
+        end
+    end
+
     always_comb begin
         next_state    = state;
         next_rr_next  = next_rr;
@@ -89,15 +96,15 @@ module rr_scheduler #(
         egress_valid  = 1'b0;
         egress_last   = 1'b0;
         ingress_ready = '0;
+        found = 1'b0;
 
         case (state)
             IDLE: begin
-                found = 1'b0;
-                for (i = 0; i < N_PORTS; i++) begin
-                    automatic logic [IDX_WIDTH-1:0] idx = next_rr + i[IDX_WIDTH-1:0];   // 2-bit add → no unused bit
-                    if (!found && ingress_valid[idx] && ingress_dst[idx] == egress_port_id) begin
+                for (int i = 0; i < N_PORTS; i++) begin
+                    //automatic logic [IDX_WIDTH-1:0] idx = next_rr + i[IDX_WIDTH-1:0];   // 2-bit add → no unused bit
+                    if (!found && ingress_valid[idx[i]] && ingress_dst[idx[i]] == egress_port_id) begin
                         found = 1'b1;
-                        select_next = idx;
+                        select_next = idx[i];
                         next_state  = SEND;
                         egress_valid= 1'b1;
                     end
