@@ -87,18 +87,18 @@ int main(int argc, const char ** argv, const char ** env) {
         dut->write = 1;
         dut->address = 6;
         break;
-      case 190:
-	dut->ingress_port_tvalid = 1;
-        dut->ingress_port_tdata = 0xAAAA;
-        break;
-      case 210:
-        dut->ingress_port_tvalid = 1;
-        dut->ingress_port_tdata = 0xAAAA;
-        break;
-      case 230:
-        dut->ingress_port_tvalid = 1;
-        dut->ingress_port_tdata = 0xAAAB;
-        break;
+      // case 190:
+	    //   dut->ingress_port_tvalid = 1;
+      //   dut->ingress_port_tdata = 0xAAAA;
+      //   break;
+      // case 210:
+      //   dut->ingress_port_tvalid = 1;
+      //   dut->ingress_port_tdata = 0xAAAA;
+      //   break;
+      // case 230:
+      //   dut->ingress_port_tvalid = 1;
+      //   dut->ingress_port_tdata = 0xAAAB;
+      //   break;
       case 250:
         dut->ingress_port_tvalid = 1;
         dut->ingress_port_tdata = 0x0201;

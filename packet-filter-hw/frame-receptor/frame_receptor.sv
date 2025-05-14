@@ -109,31 +109,29 @@ module frame_receptor #(
             frame_counter <= 0;
             dstcheck <= 0;
         end else if (ingress_port_tvalid && (inter_frame_wait == 0)) begin
-            if(input_counter <= 2) begin
-                checksum <= 0;
-                dstcheck <= 0;
-                input_counter <= input_counter + 8'h01;
-            end else if(input_counter == 3) begin
+            if(input_counter == 1) begin
                 if({reg_file[1], reg_file[0]} == ingress_port_tdata) begin
                     dstcheck <= dstcheck + 8'h01;
                 end
+                checksum <= 0;
+                dstcheck <= 0;
                 input_counter <= input_counter + 8'h01;
-            end else if(input_counter == 4) begin
+            end else if(input_counter == 2) begin
                 if({reg_file[3], reg_file[2]} == ingress_port_tdata) begin
                     dstcheck <= dstcheck + 8'h01;
                 end
                 input_counter <= input_counter + 8'h01;
-            end else if(input_counter == 5) begin
+            end else if(input_counter == 3) begin
                 if({reg_file[5], reg_file[4]} == ingress_port_tdata) begin
                     dstcheck <= dstcheck + 8'h01;
                 end
                 input_counter <= input_counter + 8'h01;
-            end else if(input_counter >= 6 && input_counter <= 9) begin
+            end else if(input_counter >= 4 && input_counter <= 7) begin
                 input_counter <= input_counter + 8'h01;
-            end else if(input_counter >= 10 && !ingress_port_tlast) begin
+            end else if(input_counter >= 8 && !ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
                 input_counter <= input_counter + 8'h01;
-            end else if(input_counter >= 10 && ingress_port_tlast) begin
+            end else if(input_counter >= 8 && ingress_port_tlast) begin
                 checksum <= checksum + {16'h00, ingress_port_tdata};
                 frame_counter <= frame_counter + 8'h01;
                 input_counter <= 0;
