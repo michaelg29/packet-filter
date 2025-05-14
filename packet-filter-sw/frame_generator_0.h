@@ -44,7 +44,7 @@ typedef union {
     frame_generator_read_t readdata;
 } frame_generator_arg_t;
 
-#define FRAME_GENERATOR_MAGIC 'q'
+#define FRAME_GENERATOR_MAGIC 'f'
 
 #define FRAME_WRITE_PACKET_0  _IOW(FRAME_GENERATOR_MAGIC, 1, frame_generator_arg_t)
 #define FRAME_READ_CHECKSUM_0 _IOR(FRAME_GENERATOR_MAGIC, 2, frame_generator_arg_t)

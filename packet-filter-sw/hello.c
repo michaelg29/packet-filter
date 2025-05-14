@@ -123,20 +123,20 @@ int main()
   receptorDST.writedata.dst_3 = 0;
   receptorDST.writedata.dst_4 = 0;
   receptorDST.writedata.dst_5 = 0;
-  receptorDST.writedata.inter_frame_wait = 10;
+  receptorDST.writedata.frame_wait = 10;
 
   printf("Userspace program started\n");
-
+  
   if ( (packet_filter_fd = open("/dev/packet_filter", O_RDWR)) == -1) {
     fprintf(stderr, "could not open /dev/packet_filter\n");
     return -1;
   }
-
+  printf("1\n");
   if ( (frame_generator_0_fd = open("/dev/frame_generator_0", O_RDWR)) == -1) {
     fprintf(stderr, "could not open /dev/frame_generator_0\n");
     return -1;
   }
-
+  printf("2\n");
   if ( (frame_receptor_0_fd = open("/dev/frame_receptor_0", O_RDWR)) == -1) {
     fprintf(stderr, "could not open /dev/frame_receptor_0\n");
     return -1;

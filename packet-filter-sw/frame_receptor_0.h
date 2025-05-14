@@ -30,9 +30,9 @@ typedef union {
     receptor_data_t readdata;
 } frame_receptor_arg_t;
 
-#define FRAME_GENERATOR_MAGIC 'q'
+#define FRAME_RECEPTOR_MAGIC 'x'
 
-#define RECEPTOR_WRITE_0 _IOW(FRAME_GENERATOR_MAGIC, 1, frame_receptor_arg_t)
-#define RECEPTOR_READ_0  _IOR(FRAME_GENERATOR_MAGIC, 2, frame_receptor_arg_t)
+#define RECEPTOR_WRITE_0 _IOW(FRAME_RECEPTOR_MAGIC, 1, frame_receptor_arg_t)
+#define RECEPTOR_READ_0  _IOR(FRAME_RECEPTOR_MAGIC, 2, frame_receptor_arg_t)
 
 #endif
