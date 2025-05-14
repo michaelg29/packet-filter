@@ -28,7 +28,7 @@ typedef struct {
 } packet_data_info_t;
 
 typedef struct {
-    uint8_t data[100][8];
+    uint8_t data[100];
 } packet_payload_t;
 
 typedef struct {

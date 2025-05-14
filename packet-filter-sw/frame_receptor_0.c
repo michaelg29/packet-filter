@@ -11,7 +11,7 @@
 #include <linux/of_address.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include "frame_receptor.h"
+#include "frame_receptor_0.h"
 
 #define DRIVER_NAME "frame_receptor_0"
 //#define NUM_RECEPTORS 4
@@ -53,8 +53,7 @@ static void writeReceptorInfo(receptor_data_info_t *writedata) {
 
 
 static long frame_receptor_ioctl(struct file *f, unsigned int cmd, unsigned long arg) {
-    frame_receptor_write_t vla;
-    frame_receptor_read_t vlar;
+    frame_receptor_arg_t vla;
     pr_info("ioctl %d\n", cmd);
 
     switch(cmd){
@@ -121,7 +120,7 @@ static int __init frame_receptor_probe(struct platform_device *pdev)
 	}
 
 	/* Set initial values */
-	writePacketInfo(&writedata);
+	writeReceptorInfo(&writedata);
 
 	return 0;
 
