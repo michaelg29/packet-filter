@@ -50,9 +50,10 @@ module fifo_sync #(
                 (ADDR_WIDTH != $clog2(NUM_CYCLONE_5CSEMA5_BLOCKS) + 9) ||
                 (W_EL > 20)
             )
-        )
+        )begin
             $error("Invalid generics in fifo_sync.");
             $finish;
+        end
     end
 
     // memory valid signals

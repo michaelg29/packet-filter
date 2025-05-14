@@ -19,29 +19,29 @@ int tdata_cnt = 1;
 // realtime step
 void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
   for (int i = 0; i < half_cycles; ++i, realtime += HFCLK) {
-    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+	dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-    if (!dut->clk && last_clock) {
-      // default stimulus
-      //dut->drop_write = drop;
-      //dut->almost_full = almost_full;
-      //dut->ingress_source = {tdata_cnt, valid, last}; // data, valid, last
+	if (!dut->clk && last_clock) {
+  	// default stimulus
+  	//dut->drop_write = drop;
+  	//dut->almost_full = almost_full;
+  	//dut->ingress_source = {tdata_cnt, valid, last}; // data, valid, last
 
-      // reset values
-      //drop = 0;
-      //almost_full = almost_full;
-    }
+  	// reset values
+  	//drop = 0;
+  	//almost_full = almost_full;
+	}
 
-    // tick
-    dut->eval();     // Run the simulation for a cycle
-    tfp->dump(realtime); // Write the VCD file for this cycle
-    if (dut->clk && !last_clock) {
-      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
-      //if ((tdata_cnt <= last) && dut->ingress_sink.__PVT__tready) {
-      //  tdata_cnt++;
-      //}
-    }
-    last_clock = dut->clk;
+	// tick
+	dut->eval(); 	// Run the simulation for a cycle
+	tfp->dump(realtime); // Write the VCD file for this cycle
+	if (dut->clk && !last_clock) {
+  	if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+  	//if ((tdata_cnt <= last) && dut->ingress_sink.__PVT__tready) {
+  	//  tdata_cnt++;
+  	//}
+	}
+	last_clock = dut->clk;
   }
 }
 
@@ -51,48 +51,90 @@ void send_frame(int preamble_delay, int frame_length, int drop_count, int almost
   int this_tdata_cnt = 1;
 
   while (true) {
-    // toggle clock
-    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+	// toggle clock
+	dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-    int tdata;
-    if (this_tdata_cnt < preamble_delay) {
-      tdata = 0xAAAA;
-    }
-    else if (this_tdata_cnt == preamble_delay) {
-      tdata = 0xAAAB;
-    }
-    else {
-      tdata = this_tdata_cnt;
-    }
+	int tdata;
+	int fdata;
+	int sdata;
+	int xdata;
+	if (this_tdata_cnt < preamble_delay) {
+  	tdata = 0xAAAA;
+  	fdata = 0xAAAA;
+  	sdata = 0xAAAA;
+  	xdata = 0xAAAA;
+	}
+	else if (this_tdata_cnt == preamble_delay) {
+  	tdata = 0xAAAA;
+  	fdata = 0xAAAB;
+  	sdata = 0xAAAB;
+  	xdata = 0xAAAB;
+	}
+	else {
+  	tdata = this_tdata_cnt;
+  	fdata = this_tdata_cnt + 5;
+  	sdata = this_tdata_cnt + 10;
+  	xdata = this_tdata_cnt + 15;
+	}
 
-    if (!dut->clk && last_clock) {
-      // default stimulus
-      //dut->drop_write = this_tdata_cnt == drop_count;
-      //dut->almost_full = almost_full_count > 0 && this_tdata_cnt >= almost_full_count;
-      //dut->ingress_source = {tdata, // data
-      //  this_tdata_cnt <= frame_length,  // valid
-      //  this_tdata_cnt == frame_length}; // last
-    }
+	if (!dut->clk && last_clock) {
+  	// default stimulus
+  	//dut->drop_write = this_tdata_cnt == drop_count;
+  	//dut->almost_full = almost_full_count > 0 && this_tdata_cnt >= almost_full_count;
+  	//dut->ingress_source = {tdata, // data
+  	//  this_tdata_cnt <= frame_length,  // valid
+  	//  this_tdata_cnt == frame_length}; // last
+	dut->ingress_port_0_tvalid = 1;
+	dut->ingress_port_1_tvalid = 1;
+	dut->ingress_port_2_tvalid = 1;
+	dut->ingress_port_3_tvalid = 1;
 
-    // tick
-    dut->eval();     // Run the simulation for a cycle
-    tfp->dump(realtime); // Write the VCD file for this cycle
-    if (dut->clk && !last_clock) {
-      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
-      //if (dut->ingress_sink.__PVT__tready) {
-      //  std::cout << "ready" << std::endl;
-      //  this_tdata_cnt++;
-      //}
-      //else {
-      //  std::cout << "not ready" << std::endl;
-      //}
-    }
-    last_clock = dut->clk;
-    realtime += HFCLK;
+	if(this_tdata_cnt == frame_length -1) {
+    	dut->ingress_port_0_tlast = 1;
+    	dut->ingress_port_1_tlast = 1;
+    	dut->ingress_port_2_tlast = 1;
+    	dut->ingress_port_3_tlast = 1;
+	}
 
-    if (this_tdata_cnt > frame_length) {
-      break;
-    }
+	else {
+    	dut->ingress_port_0_tlast = 0;
+    	dut->ingress_port_1_tlast = 0;
+    	dut->ingress_port_2_tlast = 0;
+    	dut->ingress_port_3_tlast = 0;
+	}
+
+	dut->ingress_port_0_tdata = tdata;
+	dut->egress_port_0_tready = 1;    
+
+	dut->ingress_port_1_tdata = fdata;
+	dut->egress_port_1_tready = 1;
+    
+	dut->ingress_port_2_tdata = sdata;
+	dut->egress_port_2_tready = 1;    
+    
+	dut->ingress_port_3_tdata = xdata;
+	dut->egress_port_3_tready = 1;    
+	}
+
+	// tick
+	dut->eval(); 	// Run the simulation for a cycle
+	tfp->dump(realtime); // Write the VCD file for this cycle
+	if (dut->clk && !last_clock) {
+  	if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+  	//if (dut->ingress_sink.__PVT__tready) {
+  	//  std::cout << "ready" << std::endl;
+    	this_tdata_cnt++;
+  	//}
+  	//else {
+  	//  std::cout << "not ready" << std::endl;
+  	//}
+	}
+	last_clock = dut->clk;
+	realtime += HFCLK;
+
+	if (this_tdata_cnt > frame_length) {
+  	break;
+	}
   }
 }
 
@@ -147,4 +189,6 @@ int main(int argc, const char ** argv, const char ** env) {
 
   return 0;
 }
+
+
 
