@@ -1,5 +1,5 @@
-#ifndef _FRAME_RECEPTOR_H
-#define _FRAME_RECEPTOR_H
+#ifndef _FRAME_RECEPTOR_0_H
+#define _FRAME_RECEPTOR_0_H
 
 #include <linux/ioctl.h>
 //#include <stdint.h>
@@ -34,3 +34,5 @@ typedef union {
 
 #define RECEPTOR_WRITE_0 _IOW(FRAME_GENERATOR_MAGIC, 1, frame_receptor_arg_t)
 #define RECEPTOR_READ_0  _IOR(FRAME_GENERATOR_MAGIC, 2, frame_receptor_arg_t)
+
+#endif
