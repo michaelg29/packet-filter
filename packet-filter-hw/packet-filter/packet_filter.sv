@@ -44,9 +44,12 @@
 `timescale 1 ps / 1 ps
 module packet_filter #(
         parameter STUBBING = `STUBBING_FUNCTIONAL,
+        // almost full when cannot store another full-sized frame
         parameter ALMOST_FULL_THRESHOLD = 760,
+        // address 2048 words
         parameter ADDR_WIDTH = 11,
         parameter NUM_CYCLONE_5CSEMA5_BLOCKS = 4,
+        // timeout after 512 waiting cycles
         parameter TIMEOUT_CTR_WIDTH = 9
     ) (
 		input  wire        clk,                   //                   clock.clk

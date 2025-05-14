@@ -158,6 +158,7 @@ uint16_t get_tdata(eth_frame_t *frame) {
 }
 
 void update_frame(eth_frame_t *frame, bool ready) {
+  std::cout << "Valid is " << frame->valid << " and ready is " << ready << std::endl;
   // advance cursor
   if (frame->valid && ready) {
     frame->cursor += 2; // 16-bit=2-byte packets

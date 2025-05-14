@@ -1,0 +1,98 @@
+[*]
+[*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
+[*] Wed May 14 18:34:27 2025
+[*]
+[dumpfile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/packet_filter.vcd"
+[dumpfile_mtime] "Wed May 14 18:33:36 2025"
+[dumpfile_size] 109679
+[savefile] "/Volumes/Shared/src/digital/packet-filter/packet-filter-hw/tbs/tb_packet_filter/packet_filter.gtkw"
+[timestart] 218
+[size] 1000 600
+[pos] -1 -1
+*-9.247143 1705 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.packet_filter.
+[sst_width] 193
+[signals_width] 253
+[sst_expanded] 1
+[sst_vpaned_height] 282
+@22
+TOP.packet_filter.STUBBING[31:0]
+@28
+TOP.packet_filter.clk
+TOP.packet_filter.reset
+@200
+-Ingress
+@22
+TOP.packet_filter.ingress_port_mask[3:0]
+@28
+TOP.packet_filter.ingress_port_0_tvalid
+TOP.packet_filter.ingress_port_0_tready
+TOP.packet_filter.ingress_port_0_tlast
+@22
+TOP.packet_filter.ingress_port_0_tdata[15:0]
+@28
+TOP.packet_filter.ingress_port_1_tvalid
+TOP.packet_filter.ingress_port_1_tready
+TOP.packet_filter.ingress_port_1_tlast
+@22
+TOP.packet_filter.ingress_port_1_tdata[15:0]
+@28
+TOP.packet_filter.ingress_port_2_tvalid
+TOP.packet_filter.ingress_port_2_tready
+TOP.packet_filter.ingress_port_2_tlast
+@22
+TOP.packet_filter.ingress_port_2_tdata[15:0]
+@28
+TOP.packet_filter.ingress_port_3_tvalid
+TOP.packet_filter.ingress_port_3_tready
+TOP.packet_filter.ingress_port_3_tlast
+@22
+TOP.packet_filter.ingress_port_3_tdata[15:0]
+@200
+-Egress
+@28
+TOP.packet_filter.egress_port_0_tvalid
+TOP.packet_filter.egress_port_0_tready
+TOP.packet_filter.egress_port_0_tlast
+TOP.packet_filter.egress_port_0_tdest[1:0]
+@22
+TOP.packet_filter.egress_port_0_tdata[15:0]
+@28
+TOP.packet_filter.egress_port_1_tvalid
+TOP.packet_filter.egress_port_1_tready
+TOP.packet_filter.egress_port_1_tlast
+TOP.packet_filter.egress_port_1_tdest[1:0]
+@22
+TOP.packet_filter.egress_port_1_tdata[15:0]
+@28
+TOP.packet_filter.egress_port_2_tvalid
+TOP.packet_filter.egress_port_2_tready
+TOP.packet_filter.egress_port_2_tlast
+TOP.packet_filter.egress_port_2_tdest[1:0]
+@22
+TOP.packet_filter.egress_port_2_tdata[15:0]
+@28
+TOP.packet_filter.egress_port_3_tvalid
+TOP.packet_filter.egress_port_3_tready
+TOP.packet_filter.egress_port_3_tlast
+TOP.packet_filter.egress_port_3_tdest[1:0]
+@22
+TOP.packet_filter.egress_port_3_tdata[15:0]
+@200
+-Counters
+@28
+TOP.packet_filter.chipselect
+TOP.packet_filter.read
+@23
+TOP.packet_filter.address[7:0]
+@22
+TOP.packet_filter.readdata[31:0]
+TOP.packet_filter.drop_frames[0][31:0]
+TOP.packet_filter.in_frames[0][31:0]
+TOP.packet_filter.in_pkts[0][31:0]
+TOP.packet_filter.inv_frames[0][31:0]
+TOP.packet_filter.transf_frames[0][31:0]
+TOP.packet_filter.transf_pkts[0][31:0]
+[pattern_trace] 1
+[pattern_trace] 0

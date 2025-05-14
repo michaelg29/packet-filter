@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Vpacket_filter.h"
+#include "../tb_common/packet_filter.h"
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
@@ -14,127 +15,165 @@ Vpacket_filter *dut;
 VerilatedVcdC *tfp;
 int realtime;
 
-int tdata_cnt = 1;
+eth_frame_t ingress_0_frame;
+eth_frame_t ingress_1_frame;
+eth_frame_t ingress_2_frame;
+eth_frame_t ingress_3_frame;
 
 // realtime step
 void tick(int half_cycles, int drop, int almost_full, int valid, int last) {
   for (int i = 0; i < half_cycles; ++i, realtime += HFCLK) {
-	dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-	if (!dut->clk && last_clock) {
-  	// default stimulus
-  	//dut->drop_write = drop;
-  	//dut->almost_full = almost_full;
-  	//dut->ingress_source = {tdata_cnt, valid, last}; // data, valid, last
+    if (!dut->clk && last_clock) {
+      // default stimulus
+      dut->ingress_port_0_tvalid = 0;
+      dut->ingress_port_1_tvalid = 0;
+      dut->ingress_port_2_tvalid = 0;
+      dut->ingress_port_3_tvalid = 0;
+    }
 
-  	// reset values
-  	//drop = 0;
-  	//almost_full = almost_full;
-	}
-
-	// tick
-	dut->eval(); 	// Run the simulation for a cycle
-	tfp->dump(realtime); // Write the VCD file for this cycle
-	if (dut->clk && !last_clock) {
-  	if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
-  	//if ((tdata_cnt <= last) && dut->ingress_sink.__PVT__tready) {
-  	//  tdata_cnt++;
-  	//}
-	}
-	last_clock = dut->clk;
+    // tick
+    dut->eval(); 	// Run the simulation for a cycle
+    tfp->dump(realtime); // Write the VCD file for this cycle
+    if (dut->clk && !last_clock) {
+      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+    }
+    last_clock = dut->clk;
   }
 }
 
-
-
-void send_frame(int preamble_delay, int frame_length, int drop_count, int almost_full_count) {
-  int this_tdata_cnt = 1;
+int timeout_count = 50;
+void send_frame() {
+  int not_ready_count = 0;
 
   while (true) {
-	// toggle clock
-	dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+    // toggle clock
+    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
-	int tdata;
-	int fdata;
-	int sdata;
-	int xdata;
-	if (this_tdata_cnt < preamble_delay) {
-  	tdata = 0xAAAA;
-  	fdata = 0xAAAA;
-  	sdata = 0xAAAA;
-  	xdata = 0xAAAA;
-	}
-	else if (this_tdata_cnt == preamble_delay) {
-  	tdata = 0xAAAA;
-  	fdata = 0xAAAB;
-  	sdata = 0xAAAB;
-  	xdata = 0xAAAB;
-	}
-	else {
-  	tdata = this_tdata_cnt;
-  	fdata = this_tdata_cnt + 5;
-  	sdata = this_tdata_cnt + 10;
-  	xdata = this_tdata_cnt + 15;
-	}
+    if (!dut->clk && last_clock) {
+      // default stimulus
+      dut->ingress_port_1_tvalid = 0;
+      dut->ingress_port_2_tvalid = 0;
+      dut->ingress_port_3_tvalid = 0;
 
-	if (!dut->clk && last_clock) {
-  	// default stimulus
-  	//dut->drop_write = this_tdata_cnt == drop_count;
-  	//dut->almost_full = almost_full_count > 0 && this_tdata_cnt >= almost_full_count;
-  	//dut->ingress_source = {tdata, // data
-  	//  this_tdata_cnt <= frame_length,  // valid
-  	//  this_tdata_cnt == frame_length}; // last
-	dut->ingress_port_0_tvalid = 1;
-	dut->ingress_port_1_tvalid = 1;
-	dut->ingress_port_2_tvalid = 1;
-	dut->ingress_port_3_tvalid = 1;
+      dut->ingress_port_0_tdata = get_tdata(&ingress_0_frame);
+      dut->ingress_port_0_tvalid = ingress_0_frame.valid;
+      dut->ingress_port_0_tlast = ingress_0_frame.last;
 
-	if(this_tdata_cnt == frame_length -1) {
-    	dut->ingress_port_0_tlast = 1;
-    	dut->ingress_port_1_tlast = 1;
-    	dut->ingress_port_2_tlast = 1;
-    	dut->ingress_port_3_tlast = 1;
-	}
+      dut->egress_port_0_tready = dut->egress_port_0_tvalid;
+      dut->egress_port_1_tready = dut->egress_port_1_tvalid;
+      dut->egress_port_2_tready = dut->egress_port_2_tvalid;
+      dut->egress_port_3_tready = dut->egress_port_3_tvalid;
+    }
 
-	else {
-    	dut->ingress_port_0_tlast = 0;
-    	dut->ingress_port_1_tlast = 0;
-    	dut->ingress_port_2_tlast = 0;
-    	dut->ingress_port_3_tlast = 0;
-	}
+    // tick
+    dut->eval(); 	// Run the simulation for a cycle
+    tfp->dump(realtime); // Write the VCD file for this cycle
+    if (dut->clk && !last_clock) {
+      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
 
-	dut->ingress_port_0_tdata = tdata;
-	dut->egress_port_0_tready = 1;    
+      update_frame(&ingress_0_frame, dut->ingress_port_0_tready);
+      if (ingress_0_frame.valid && !dut->ingress_port_0_tready) {
+        ++not_ready_count;
+      }
+    }
+    last_clock = dut->clk;
+    realtime += HFCLK;
 
-	dut->ingress_port_1_tdata = fdata;
-	dut->egress_port_1_tready = 1;
-    
-	dut->ingress_port_2_tdata = sdata;
-	dut->egress_port_2_tready = 1;    
-    
-	dut->ingress_port_3_tdata = xdata;
-	dut->egress_port_3_tready = 1;    
-	}
+    if (ingress_0_frame.done) {
+      std::cout << "Frame completed transmission." << std::endl;
+      break;
+    }
 
-	// tick
-	dut->eval(); 	// Run the simulation for a cycle
-	tfp->dump(realtime); // Write the VCD file for this cycle
-	if (dut->clk && !last_clock) {
-  	if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
-  	//if (dut->ingress_sink.__PVT__tready) {
-  	//  std::cout << "ready" << std::endl;
-    	this_tdata_cnt++;
-  	//}
-  	//else {
-  	//  std::cout << "not ready" << std::endl;
-  	//}
-	}
-	last_clock = dut->clk;
-	realtime += HFCLK;
+    if (not_ready_count >= timeout_count) {
+      std::cout << "Transmission timed out" << std::endl;
+      break;
+    }
+  }
+}
 
-	if (this_tdata_cnt > frame_length) {
-  	break;
-	}
+void wait_flush() {
+  while (true) {
+    // toggle clock
+    dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+
+    if (!dut->clk && last_clock) {
+      // default stimulus
+      dut->ingress_port_0_tvalid = 0;
+      dut->ingress_port_1_tvalid = 0;
+      dut->ingress_port_2_tvalid = 0;
+      dut->ingress_port_3_tvalid = 0;
+
+      dut->egress_port_0_tready = dut->egress_port_0_tvalid;
+      dut->egress_port_1_tready = dut->egress_port_1_tvalid;
+      dut->egress_port_2_tready = dut->egress_port_2_tvalid;
+      dut->egress_port_3_tready = dut->egress_port_3_tvalid;
+    }
+
+    // tick
+    dut->eval(); 	// Run the simulation for a cycle
+    tfp->dump(realtime); // Write the VCD file for this cycle
+    if (dut->clk && !last_clock) {
+      if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+    }
+    last_clock = dut->clk;
+    realtime += HFCLK;
+
+    if (!dut->egress_port_0_tvalid &&
+        !dut->egress_port_1_tvalid &&
+        !dut->egress_port_2_tvalid &&
+        !dut->egress_port_3_tvalid) {
+      break;
+    }
+  }
+}
+
+#define NUM_CSRS 6
+int csr_base_addresses[NUM_CSRS] = {
+  4, 8, 12, 16, 20, 24
+};
+const char *csr_names[NUM_CSRS] = {
+  "Ingress packets",
+  "Transferred packets",
+  "Ingress frames",
+  "Transferred frames",
+  "Invalid frames",
+  "Dropped frames"
+};
+int csr_vals[4][NUM_CSRS];
+
+void read_ingress_stats(int ingress_idx) {
+  bool read;
+  for (int i = 0; i < NUM_CSRS; ++i) {
+    read = true;
+    // send read request
+    while (true) {
+      // toggle clock
+      dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
+
+      if (!dut->clk && last_clock) {
+        // default stimulus
+        dut->chipselect = 1;
+        dut->read = read;
+        dut->address = csr_base_addresses[i] + ingress_idx;
+      }
+
+      // tick
+      dut->eval(); 	// Run the simulation for a cycle
+      tfp->dump(realtime); // Write the VCD file for this cycle
+      if (dut->clk && !last_clock) {
+        if (realtime >= 60) std::cout << realtime << ": " << std::endl; // Print the next value
+
+        // read statistics
+        csr_vals[ingress_idx][i] = dut->readdata;
+      }
+      last_clock = dut->clk;
+      realtime += HFCLK;
+
+      if (!read) break;
+      read = false;
+    }
   }
 }
 
@@ -158,8 +197,7 @@ int main(int argc, const char ** argv, const char ** env) {
 
   // Initial values
   dut->reset = 1;
-
-  // first frame
+  init_statistics_collection(&ingress_0_frame);
 
   // simulation start
   last_clock = true;
@@ -167,17 +205,37 @@ int main(int argc, const char ** argv, const char ** env) {
 
   reset();
 
-  send_frame(11, 50, 0, 0);
+  tick(32, 0, 0, 0, 0);
+
+  init_frame(&ingress_0_frame, 1, 11, 50, false, 0, 0);
+  init_frame(&ingress_1_frame, 1, 11, 50, false, 0, 0);
+  init_frame(&ingress_2_frame, 1, 11, 50, false, 0, 0);
+  init_frame(&ingress_3_frame, 1, 11, 50, false, 0, 0);
+  send_frame();
 
   tick(32, 0, 0, 0, 0);
 
-  send_frame(11, 80, 30, 0);
+  /*init_frame(&ingress_0_frame, 1, 11, 50, false, 0, 0);
+  send_frame();
 
   tick(32, 0, 0, 0, 0);
 
-  send_frame(11, 80, 0, 30);
+  init_frame(&ingress_0_frame, 1, 11, 50, false, 0, 0);
+  send_frame();
 
-  tick(32, 0, 0, 0, 0);
+  tick(32, 0, 0, 0, 0);*/
+
+  // allow for flush
+  wait_flush();
+
+  std::cout << "ingress_0 statistics" << std::endl;
+  report(&ingress_0_frame, realtime / CLK, CLK);
+
+  std::cout << "Reading from CSRs" << std::endl;
+  read_ingress_stats(0);
+  read_ingress_stats(1);
+  read_ingress_stats(2);
+  read_ingress_stats(3);
 
   std::cout << std::endl;
 
@@ -186,6 +244,20 @@ int main(int argc, const char ** argv, const char ** env) {
 
   dut->final(); // Stop the simulation
   delete dut;
+
+  std::cout << "Final CSRs:" << std::endl;
+  std::cout << "ingress_port";
+  for (int j = 0; j < NUM_CSRS; j++) {
+    std::cout << "," << csr_names[j];
+  }
+  std::cout << std::endl;
+  for (int i = 0; i < 4; i++) {
+    std::cout << i;
+    for (int j = 0; j < NUM_CSRS; j++) {
+      std::cout << "," << csr_vals[i][j];
+    }
+    std::cout << std::endl;
+  }
 
   return 0;
 }

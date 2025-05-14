@@ -59,8 +59,12 @@ ifup eth0
 cd src/packet-filter
 git pull
 cd packet-filter-sw
-make
+make MODULE=frame_generator_0
+make MODULE=packet_filter
+make MODULE=frame_receptor_0
+insmod frame_generator_0.ko
 insmod packet_filter.ko
+insmod frame_receptor_0.ko
 lsmod
 ./hello
 rmmod packet_filter
