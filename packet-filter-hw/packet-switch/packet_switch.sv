@@ -12,12 +12,12 @@ module packet_switch #(
     input  wire              reset,
 
     // Avalon-MM register interface
-    input  wire [7:0]        writedata,
+    input  wire [31:0]       writedata,
     input  wire              write,
     input  wire              chipselect,
     input  wire [7:0]        address,
     input  wire              read,
-    output reg  [7:0]        readdata,
+    output reg  [31:0]       readdata,
 
     // Four AXIS ingress ports
     input  wire [DATA_WIDTH-1:0] ingress_port_0_tdata,
@@ -79,9 +79,9 @@ module packet_switch #(
                                         egress_mask <= writedata[N_PORTS-1:0];
     end
     always_ff @(posedge clk or posedge reset) begin
-        if (reset)                      readdata <= 8'h00;
+        if (reset)                      readdata <= 32'h00;
         else if (chipselect && read && address == 8'h0)
-                                        readdata <= {{8-N_PORTS{1'b0}}, egress_mask};
+                                        readdata <= {{32-N_PORTS{1'b0}}, egress_mask};
     end
     assign irq = 1'b0;
 

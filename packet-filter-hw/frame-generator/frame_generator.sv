@@ -40,12 +40,12 @@ module frame_generator #(
     ) (
 		input  wire         clk,                //          clock.clk
 		input  wire         reset,              //          reset.reset
-		input  wire  [7:0]  writedata,          // avalon_slave_0.writedata
+		input  wire  [31:0] writedata,          // avalon_slave_0.writedata
 		input  wire         write,              //               .write
 		input  wire         chipselect,         //               .chipselect
 		input  wire  [7:0]  address,            //               .address
 		input  wire         read,               //               .read
-		output logic [7:0]  readdata,           //               .readdata
+		output logic [31:0] readdata,           //               .readdata
 		output logic [15:0] egress_port_tdata,  //    egress_port.tdata
 		output logic        egress_port_tlast,  //               .tlast
 		input  wire         egress_port_tready, //               .tready
@@ -72,15 +72,15 @@ module frame_generator #(
 	        //input_counter <= 0;
         end else if (chipselect && write) begin
             if(address <= 16) begin
-                reg_file[address[4:0]] <= writedata;
+                reg_file[address[4:0]] <= writedata[7:0];
             end else if(address > 16) begin
 		        if({reg_file[13], reg_file[12]} != 0) begin
 		            if({8'h00,address} <= (17 + {reg_file[13], reg_file[12]})) begin
 		                if(!address[0])
-                    	    payload_byte[7:0] <= writedata;
+                    	    payload_byte[7:0] <= writedata[7:0];
                     	else
-                            payload_byte[15:8] <= writedata;
-                        checksum <= checksum + {24'b0, writedata};
+                            payload_byte[15:8] <= writedata[7:0];
+                        checksum <= checksum + {24'b0, writedata[7:0]};
 		            end
                 end
             end
@@ -90,19 +90,21 @@ module frame_generator #(
 
     // register read interface
     always_ff @(posedge clk) begin
-        if (chipselect && read) begin
+        if (reset) begin
+            readdata <= 32'h0;
+        end else if (chipselect && read) begin
             if(address <= 16)
-                readdata <= reg_file[address[4:0]];
+                readdata[7:0] <= reg_file[address[4:0]];
             else if (address >= 17 && address <= 20)
                 case (address)
-                    17 : readdata <= checksum[7:0];
-                    18 : readdata <= checksum[15:8];
-                    19 : readdata <= checksum[23:16];
-                    20 : readdata <= checksum[31:24];
+                    17 : readdata[7:0] <= checksum[7:0];
+                    18 : readdata[7:0] <= checksum[15:8];
+                    19 : readdata[7:0] <= checksum[23:16];
+                    20 : readdata[7:0] <= checksum[31:24];
                 endcase
         end
         else begin
-            readdata <= 8'h00;
+            readdata <= 32'h00;
         end
     end
     //Frame State Machine

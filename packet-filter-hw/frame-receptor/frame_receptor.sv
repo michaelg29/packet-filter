@@ -32,12 +32,12 @@ module frame_receptor #(
     ) (
 		input  wire        clk,                 //          clock.clk
 		input  wire        reset,               //          reset.reset
-		input  wire [7:0]  writedata,           // avalon_slave_0.writedata
+		input  wire [31:0] writedata,           // avalon_slave_0.writedata
 		input  wire        write,               //               .write
 		input  wire        chipselect,          //               .chipselect
 		input  wire [7:0]  address,             //               .address
 		input  wire        read,                //               .read
-		output logic [7:0]  readdata,            //               .readdata
+		output logic [31:0] readdata,           //               .readdata
 		input  wire [15:0] ingress_port_tdata,  //   ingress_port.tdata
 		input  wire        ingress_port_tvalid, //               .tvalid
 		output logic        ingress_port_tready, //               .tready
@@ -69,7 +69,7 @@ module frame_receptor #(
         end
         else if (chipselect && write)  begin
             if(address <= 6)
-                reg_file[address[2:0]] <= writedata;
+                reg_file[address[2:0]] <= writedata[7:0];
         end
     end
     //inter_frame_wait signal
@@ -85,20 +85,21 @@ module frame_receptor #(
     end
     // register read interface
     always_ff @(posedge clk) begin
-        if (chipselect && read) begin
+        if (reset) begin
+            readdata <= 32'h0;
+        end else if (chipselect && read) begin
             if(address <= 6)
                 readdata <= reg_file[address[2:0]];
             else if (address >= 7 && address <= 11)
                 case (address)
-                    7  : readdata <= dstcheck;
-                    8  : readdata <= checksum[7:0];
-                    9  : readdata <= checksum[15:8];
-                    10 : readdata <= checksum[23:16];
-                    11 : readdata <= checksum[31:24];
+                    7  : readdata[7:0] <= dstcheck;
+                    8  : readdata[7:0] <= checksum[7:0];
+                    9  : readdata[7:0] <= checksum[15:8];
+                    10 : readdata[7:0] <= checksum[23:16];
+                    11 : readdata[7:0] <= checksum[31:24];
                 endcase
-        end
-        else begin
-            readdata <= 8'h00;
+        end else begin
+            readdata <= 32'h00;
         end
     end
 
