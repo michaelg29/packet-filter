@@ -1,7 +1,7 @@
 // packet_switch.sv
 `include "../include/packet_filter.svh"
-`include "rr_scheduler.sv"
-`include "mux4to1.sv"
+`include "../packet-switch/rr_scheduler.sv"
+`include "../packet-switch/mux4to1.sv"
 `timescale 1 ps / 1 ps
 
 module packet_switch #(
