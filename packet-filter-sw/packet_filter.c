@@ -37,6 +37,12 @@
 
 /* Device registers */
 #define INGRESS_PORT_FILTER(x) ((x)+0)
+#define CTR_IN_PKTS(x,i) ((x)+4+(i))
+#define CTR_TRANSF_PKTS(x,i) ((x)+8+(i))
+#define CTR_IN_FRAMES(x,i) ((x)+12+(i))
+#define CTR_TRANSF_FRAMES(x,i) ((x)+16+(i))
+#define CTR_INV_FRAMES(x,i) ((x)+20+(i))
+#define CTR_DROP_FRAMES(x,i) ((x)+24+(i))
 
 /*
  * Information about our device
@@ -44,12 +50,36 @@
 struct packet_filter_dev {
 	struct resource res; /* Resource: our registers */
 	void __iomem *virtbase; /* Where registers can be accessed in memory */
-        packet_filter_ingress_port_mask_t ingress_port_mask;
+  packet_filter_ingress_port_mask_t ingress_port_mask;
 } dev;
 
 static void write_ingress_port_mask(packet_filter_ingress_port_mask_t *mask) {
   iowrite8(mask->mask, INGRESS_PORT_FILTER(dev.virtbase));
   dev.ingress_port_mask = *mask;
+}
+
+static uint32_t read_packet_filter_in_pkts(int ingress) {
+  return ioread32(CTR_IN_PKTS(dev.virtbase, ingress));
+}
+
+static uint32_t read_packet_filter_transf_pkts(int ingress) {
+  return ioread32(CTR_TRANSF_PKTS(dev.virtbase, ingress));
+}
+
+static uint32_t read_packet_filter_in_frames(int ingress) {
+  return ioread32(CTR_IN_FRAMES(dev.virtbase, ingress));
+}
+
+static uint32_t read_packet_filter_transf_frames(int ingress) {
+  return ioread32(CTR_TRANSF_FRAMES(dev.virtbase, ingress));
+}
+
+static uint32_t read_packet_filter_inv_frames(int ingress) {
+  return ioread32(CTR_INV_FRAMES(dev.virtbase, ingress));
+}
+
+static uint32_t read_packet_filter_drop_frames(int ingress) {
+  return ioread32(CTR_DROP_FRAMES(dev.virtbase, ingress));
 }
 
 /*
@@ -77,6 +107,72 @@ static long packet_filter_ioctl(struct file *f, unsigned int cmd, unsigned long 
 				 sizeof(packet_filter_arg_t)))
 			return -EACCES;
 		break;
+
+	case PACKET_FILTER_READ_CTR_IN_PKTS:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_in_pkts(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
+
+	case PACKET_FILTER_READ_CTR_TRANSF_PKTS:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_transf_pkts(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
+
+	case PACKET_FILTER_READ_CTR_IN_FRAMES:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_in_frames(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
+
+	case PACKET_FILTER_READ_CTR_TRANSF_FRAMES:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_transf_frames(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
+
+	case PACKET_FILTER_READ_CTR_INV_FRAMES:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_inv_frames(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
+
+	case PACKET_FILTER_READ_CTR_DROP_FRAMES:
+		if (copy_from_user(&vla, (packet_filter_arg_t *) arg,
+				   sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  vla.ingress_counter_target =
+	    read_packet_filter_drop_frames(vla.ingress_counter_target);
+		if (copy_to_user((packet_filter_arg_t *) arg, &vla,
+				 sizeof(packet_filter_arg_t)))
+			return -EACCES;
+	  break;
 
 	default:
 		return -EINVAL;
