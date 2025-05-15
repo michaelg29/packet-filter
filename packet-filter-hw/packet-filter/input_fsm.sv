@@ -51,6 +51,7 @@ module input_fsm #(
     localparam FRAME_STATUS_PAYLOAD = 5'b10001;
 
     // Status signals
+    logic end_of_frame;
     logic sfd_received;
     logic next_tready;
     logic [4:0] frame_status_str;
@@ -62,7 +63,7 @@ module input_fsm #(
         //   and not done with the current frame if a frame is ingressing
         if (almost_full) begin
             // hold ready until completed transaction
-            next_tready = ingress_sink.tready & ~ingress_pkt.tlast;
+            next_tready = ingress_sink.tready & ~end_of_frame;
         end else begin
             // turn on with new request or while waiting for request to terminate
             next_tready = ingress_source.tvalid & ~(ingress_sink.tready & ingress_pkt.tlast);
@@ -102,7 +103,7 @@ module input_fsm #(
 
     // Propagate next state to state
     assign next_state_transition_en =
-        handshake_complete || (next_state === FLUSH);
+        next_tready || ingress_sink.tready || (next_state === FLUSH);
     always_ff @(posedge clk) begin: p_propagate_next_state
         if (reset) begin
             state <= IDLE;
@@ -123,6 +124,7 @@ module input_fsm #(
         : (state_transition_en
             ? next_state : state);
     assign sfd_received = ingress_pkt.tdata === `ETH_SFD;
+    assign end_of_frame = ~ingress_pkt.tvalid | ingress_pkt.tlast;
     always_comb begin: p_next_state
         next_state = state;
         case (state)
@@ -132,21 +134,21 @@ module input_fsm #(
             end
         end
         DST_MAC: begin
-            if (ingress_pkt.tlast) begin
+            if (end_of_frame) begin
                 next_state = FLUSH;
             end else if (cycle_counter === 2'b10) begin
                 next_state = SRC_MAC;
             end
         end
         SRC_MAC: begin
-            if (ingress_pkt.tlast) begin
+            if (end_of_frame) begin
                 next_state = FLUSH;
             end else if (cycle_counter === 2'b10) begin
                 next_state = TYPE;
             end
         end
         TYPE: begin
-            if (ingress_pkt.tlast) begin
+            if (end_of_frame) begin
                 next_state = FLUSH;
             end else begin
                 next_state = PAYLOAD;
@@ -156,12 +158,12 @@ module input_fsm #(
             next_state = IDLE;
         end
         PAYLOAD: begin
-            if (ingress_pkt.tlast) begin
+            if (end_of_frame) begin
                 next_state = IDLE;
             end
         end
         MASK: begin
-            if (ingress_pkt.tlast) begin
+            if (end_of_frame) begin
                 next_state = IDLE;
             end
         end

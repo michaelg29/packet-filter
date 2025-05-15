@@ -88,7 +88,7 @@ module preliminary_processor #(
     // do not provide grants if almost full
     assertion_preliminary_processor_almost_full : assert property(
         @(posedge clk) disable iff (reset)
-        almost_full && (~ingress_source.tvalid || ingress_pkt.tlast)
+        almost_full && (~$past(ingress_source.tvalid, 1) || $past(ingress_pkt.tlast, 1))
             |=> ~ingress_sink.tready
     ) else $error($sformatf("assertion_preliminary_processor_almost_full failed at %0t", $realtime));
 

@@ -144,20 +144,21 @@ const char *csr_names[NUM_CSRS] = {
 int csr_vals[4][NUM_CSRS];
 
 void read_ingress_stats(int ingress_idx) {
-  bool read;
+  int read = 1;
   for (int i = 0; i < NUM_CSRS; ++i) {
-    read = true;
+    dut->read = 1;
+    read = 6;
     // send read request
-    while (true) {
+    while (read--) {
       // toggle clock
       dut->clk = ((realtime % CLK) < HFCLK) ? 1 : 0;
 
       if (!dut->clk && last_clock) {
         // default stimulus
         dut->chipselect = 1;
-        dut->read = read;
+        //dut->read = read;
         dut->address = csr_base_addresses[i] + ingress_idx;
-        std::cout << "Setting read to " << read << std::endl;
+        std::cout << "Setting read to " << dut->read << std::endl;
       }
 
       // tick
@@ -172,8 +173,8 @@ void read_ingress_stats(int ingress_idx) {
       last_clock = dut->clk;
       realtime += HFCLK;
 
-      if (!read) break;
-      read = false;
+      //if (!read) break;
+      //read = 0;
     }
   }
 }
@@ -228,6 +229,7 @@ int main(int argc, const char ** argv, const char ** env) {
 
   // allow for flush
   wait_flush();
+  tick(100, 0, 0, 0, 0);
 
   std::cout << "ingress_0 statistics" << std::endl;
   report(&ingress_0_frame, realtime / CLK, CLK);
